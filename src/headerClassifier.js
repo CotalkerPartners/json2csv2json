@@ -92,8 +92,8 @@ exports.rowClassifier = (row,schem) => {
                         index:tA.index,
                         level: lvl,
                         isLeaf: false,
-                        ptype:Array,
-                        type: Array
+                        ptype:'Array',
+                        type: 'Array'
                     });
                     parentList.push(tA.index);
                 }
@@ -108,8 +108,8 @@ exports.rowClassifier = (row,schem) => {
                         key:tO.Key,
                         level: lvl,
                         isLeaf: false,
-                        ptype:Object,
-                        type: Array
+                        ptype:'Object',
+                        type: 'Array'
                     });
                     parentList.push(tO.Key);
                 }
@@ -139,8 +139,8 @@ exports.rowClassifier = (row,schem) => {
                         index:tA.index,
                         level: lvl,
                         isLeaf: false,
-                        ptype:Array,
-                        type:Object});
+                        ptype:'Array',
+                        type:'Object'});
                     parentList.push(tA.index);
                 }
                 try {
@@ -154,8 +154,8 @@ exports.rowClassifier = (row,schem) => {
                         key:tO.Key,
                         level: lvl,
                         isLeaf: false,
-                        ptype:Object,
-                        type: Object
+                        ptype:'Object',
+                        type: 'Object'
                     });
                 parentList.push(tO.Key);
                 }
@@ -168,7 +168,7 @@ exports.rowClassifier = (row,schem) => {
     }
     if (lvl === 0){
         if (!(row in schem)){
-            schem[row] = '';
+            schem[row] = 'String'; //Schema to String for non nested elements
             console.log('Added '+row+' to Schem'); //ConsoleLog
         }
         hierarch.push({
@@ -177,7 +177,7 @@ exports.rowClassifier = (row,schem) => {
             level: lvl,
             isLeaf: true,
             ptype:null,
-            type:String
+            type:'String'
         });
     }
     else {
@@ -189,8 +189,8 @@ exports.rowClassifier = (row,schem) => {
                 index:Aprnt.index,
                 level: lvl,
                 isLeaf: true,
-                ptype:Array,
-                type:String
+                ptype:'Array',
+                type:'String'
             });      
         }
         else if (Oprnt.answer){
@@ -199,8 +199,8 @@ exports.rowClassifier = (row,schem) => {
                 key:Oprnt.Key,
                 level: lvl,
                 isLeaf: true,
-                ptype:Object,
-                type:String
+                ptype:'Object',
+                type:'String'
             });      
         }
     }
@@ -209,7 +209,7 @@ exports.rowClassifier = (row,schem) => {
     for (var elmnt in hierarch){
         if (elmnt.index === maxlvl){
             elmnt.isLeaf = true;
-            elmnt.type = String;
+            elmnt.type = 'String';
         }
     }
     parentList = [];
