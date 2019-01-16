@@ -30,7 +30,7 @@
 }
  */
 
-interface tClass{
+export interface tClass{
     tokens: Array<string>,
     modes: Array<string>
 }
@@ -44,6 +44,11 @@ export function tokenizeClassifier(rowname:string):tClass{
         switch (inMode) {
             case 'Root':
                 tokenizer = rowname.match(/\w+(?=(\[|\{))/);
+                if (tokenizer === null){
+                    tC.tokens.push(rowname);
+                    rowname = '';
+                    break;
+                }
                 if (tokenizer[0] != null){
                     tC.tokens.push(tokenizer[0]);
                 }
@@ -88,7 +93,7 @@ export function tokenizeClassifier(rowname:string):tClass{
     return tC;
 }
 
-var str:string = 'pescado{perro}[90]{oso}{casa}[11]';
+var str:string = 'pescado';
 
 let res:tClass = tokenizeClassifier(str);
 
