@@ -1,14 +1,41 @@
+
+/**
+ * Recieves a row name, and process it to return an object with two arrays.
+    * tokens: Array of keys or indexes (as strings) of the acces sequence to the row value
+    * modes: Array of strings describing in an orderly fashion the nesting of the row value
+ * Example: 
+    var str:string = 'pescado{perro}[90]{oso}{casa}[11]';
+
+    let res:tClass = tokenizeClassifier(str);  
+
+    return res;
+
+    * returns: {
+        "tokens": [
+            "pescado",
+            "perro",
+            "90",
+            "oso",
+            "casa",
+            "11"
+        ],
+        "modes": [
+            "Root",
+            "Object",
+            "Array",
+            "Object",
+            "Object",
+            "Array"
+        ]
+}
+ */
+
 interface tClass{
     tokens: Array<string>,
     modes: Array<string>
 }
 
-/***Fix Null Problem 
- * Revisar si funciona bien el tema de String.match
-*/
-
-
-function tokenizeClassifier(rowname:string):tClass{
+export function tokenizeClassifier(rowname:string):tClass{
     let tC:tClass = {tokens:[],modes:[]};
     let inMode:string ='Root';
     let tokenizer:Array<string>;
@@ -29,7 +56,7 @@ function tokenizeClassifier(rowname:string):tClass{
                 rowname = rowname.slice(tokenizer[0].length);
                 break;
             case 'Object':
-                tokenizer = rowname.match(/\d+(?=\}(\{|\[))/);
+                tokenizer = rowname.match(/\w+(?=\}(\[|\{)?)/);
                 if (tokenizer[0] != null){
                     tC.tokens.push(tokenizer[0]);
                 }
@@ -39,10 +66,10 @@ function tokenizeClassifier(rowname:string):tClass{
                 else if (tokenizer[1] === '['){
                     inMode = 'Array';
                 }
-                rowname = rowname.slice(tokenizer[0].length);
+                rowname = rowname.slice(tokenizer[0].length+2); //Length +2 includes the parenthesis
                 break
             case 'Array':
-                tokenizer = rowname.match(/\d+(?=\](\{|\[))/);
+                tokenizer = rowname.match(/\w+(?=\](\{|\[)?)/);
                 if (tokenizer[0] != null){
                     tC.tokens.push(tokenizer[0]);
                 }
@@ -52,7 +79,7 @@ function tokenizeClassifier(rowname:string):tClass{
                 else if (tokenizer[1] === '['){
                     inMode = 'Array';
                 }
-                rowname = rowname.slice(tokenizer[0].length);
+                rowname = rowname.slice(tokenizer[0].length+2); //Length +2 includes the parenthesis
                 break
             default:
                 break;

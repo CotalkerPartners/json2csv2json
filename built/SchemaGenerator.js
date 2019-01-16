@@ -65,3 +65,4 @@ function SortByIndex(auxL) {
     });
     return SortedAuxL;
 }
+//# sourceMappingURL=SchemaGenerator.js.map
