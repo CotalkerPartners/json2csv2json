@@ -1,237 +1,162 @@
-interface arrayParent {
-    answer: boolean,
-    index: number
+import {InestMap} from "./tokenClassify";
+import {tokenizeClassifier} from "./tokenClassify";
+export interface Inode {
+    parent: (string | number)[];
+    index?: number;
+    key?: string;
+    level: number;
+    isLeaf: boolean;
+    ptype: string;
+    type: string;
 }
 
-interface objectParent {
-    answer: boolean,
-    Key: string
+function NewNode(i:number):Inode {
+    let Nnode:Inode = {
+        parent: [],
+        isLeaf: false,
+        level: i,
+        ptype:"None",
+        type: "String" // *pending* Incorporate user options *here*;
+    };
+    return Nnode;
 }
 
-export interface node {
-    parent: Array<any>,
-    isLeaf: boolean,
-    key?: string,
-    index?: number,
-    level: number,
-    ptype: string,
-    type: string
-}
-
-var parentList = [];
-//Check errors
-function FormatErrors(row:String){
-    if (row.includes('..')){
-        throw "Object notation error: Use of \'..\' is not permited. Cause: "+row;
-    }
-    if ((row.includes('{[') && row.includes(']}'))||(row.includes('.['))){
-        throw "Object notation error: Use of Array \'[]\' is not permited as an object attribute."+
-        "Cause: "+row;
-    }
-    if (row.includes('[[') || row.includes(']]')){
-        throw "Array notation error: Nesting of brackets for Array \'[[]]\' is not permited."+
-        "Cause: "+row;
-    }
-}
-
-
-function parentIsArray(subrow:String):arrayParent{
-    let ans:boolean;
-    let ind:number;
-    if (subrow.slice(-1)===']'){
-        let aux:string = subrow.slice(subrow.lastIndexOf('[')+1,-1);
-        if (!isNaN(Number(aux))){
-            ind = parseInt(aux);
-            ans = true;
+function FormatErrors(rowname:string):void {
+    /*
+    * Detects unclosed parenthesis or parenthesis inside parenthesis
+    * Flags are used to signal the entrance to parenthesis
+        * { or [ => flag.On
+        * } or ] => flag.Off
+    * throws error if tries to raise an already raised flag or if it doesn"t lowers 
+      the flags at the end.
+    */
+   let Arrayflag:boolean = false;
+   let Objectflag:boolean = false;
+   for (var i:number = 0, tot:number = rowname.length; i < tot; i++) {
+        switch (rowname[i]) {
+            case "[":
+                if (Arrayflag || Objectflag){
+                    throw "Format Error, bad use of '['. Cause: "+rowname;
+                }
+                else {
+                    Arrayflag = true;
+                }
+                break;
+            case "{":
+                if (Arrayflag || Objectflag){
+                    throw "Format Error, bad use of '{'. Cause: "+rowname;
+                }
+                else {
+                    Objectflag = true;
+                }
+                break;
+            case "]":
+                if (Arrayflag && !Objectflag){
+                    Arrayflag = false;
+                }
+                else {
+                    throw "Format Error, bad use of ']'. Cause: "+rowname;
+                }
+                break;
+            case "}":
+                if (Objectflag && !Arrayflag){
+                    Objectflag = false;
+                }
+                else {
+                    throw "Format Error, bad use of '}'. Cause: "+rowname;
+                }
+                break;
         }
-        else{
-            ans = false;
-            ind = -1;
-            throw "Array index error. Cause: "+subrow;
-        }     
     }
-    else {
-        ans = false;
-        ind = -1;
+    if (Arrayflag || Objectflag) {
+        throw "Error, unclosed instance. Cause "+rowname;
     }
-    return {answer:ans,index:ind};
 }
 
-function parentIsObject(subrow:string):objectParent{
-    let ans:boolean;
-    let key:string;
-    if (subrow.slice(-1)==='}'){
-        let aux:string = subrow.slice(subrow.lastIndexOf('{')+1,-1);
-        ans = true;
-        key = aux;
+function IndexErrors(nestMap:InestMap,rowname:string):void {
+    if (nestMap.tokens.length !== nestMap.modes.length) {
+        throw "Unexpected difference in the number of keys/indexes and modes. Cause: "+rowname;
     }
-    else {
-        ans = false;
-        key = null;
+    for (var i:number = 0, tot:number = nestMap.tokens.length;i<tot;i++){
+        if (nestMap.modes[i] === "Array") {
+            if (isNaN(Number(nestMap.tokens[i]))) {
+                throw "Index Error, not a number. Cause: "+rowname;
+            }
+        }
     }
-    return {answer:ans,Key:key};
 }
 
-export function rowClassifier(row:string,schem:object) {
+export function rowClassify(rowname:string,Schem:object):Array<Inode>{
     try {
-        FormatErrors(row);
+        FormatErrors(rowname);
     } catch (error) {
         console.log(error);
-    }  
-    /*Go across the string from beggining to end, order of instances of '{','[' or '.' determines
-     the hierarchy of the row.*/
-    let hierarch:Array<node> = [];
-    let lvl:number = 0;
-    for (var i = 0, tot = row.length; i < tot; i++) {
-        if (row[i] === '['){
-            if (lvl === 0){
-                var previous:string = row.substring(0,i);
-                if (!(previous in schem)){
-                    console.log("Added "+previous+"[] to Schem");
-                    schem[previous] = [];
-                }
-                parentList.push(previous);
-                lvl++;
-            }
-            else {
-                let tA:arrayParent;
-                let tO:objectParent;
-                previous = row.substring(0,i);
-                try {
-                    tA = parentIsArray(previous);
-                } catch (error) {
-                    console.log(error);
-                }
-                if (tA.answer){
-                    hierarch.push({
-                        parent:parentList.slice(0,lvl),
-                        index:tA.index,
-                        level: lvl,
-                        isLeaf: false,
-                        ptype:'Array',
-                        type: 'Array'
-                    });
-                    parentList.push(tA.index);
-                }
-                try {
-                    tO = parentIsObject(previous);
-                } catch (error) {
-                    console.log(error);
-                }
-                if (tO.answer){
-                    hierarch.push({
-                        parent:parentList.slice(0,lvl),
-                        key:tO.Key,
-                        level: lvl,
-                        isLeaf: false,
-                        ptype:'Object',
-                        type: 'Array'
-                    });
-                    parentList.push(tO.Key);
-                }
-                lvl++;
-            }
-            
-        }
-        else if (row[i] === '{'){
-            let tA:arrayParent;
-            let tO:objectParent;
-            if (lvl === 0){
-                previous = row.substring(0,i);
-                if (!(previous in schem)){
-                    schem[previous] = {};
-                }
-                parentList.push(previous);
-                lvl++;
-            }
-            else{
-                previous = row.substring(0,i);
-                try {
-                    tA = parentIsArray(previous);
-                } catch (error) {
-                    console.log(error);
-                }
-                if (tA.answer){
-                    hierarch.push({
-                        parent:parentList.slice(0,lvl),
-                        index:tA.index,
-                        level: lvl,
-                        isLeaf: false,
-                        ptype:'Array',
-                        type:'Object'});
-                    parentList.push(tA.index);
-                }
-                try {
-                    tO = parentIsObject(previous);
-                } catch (error) {
-                    console.log(error);
-                }
-                if (tO.answer){
-                    hierarch.push({
-                        parent:parentList.slice(0,lvl),
-                        key:tO.Key,
-                        level: lvl,
-                        isLeaf: false,
-                        ptype:'Object',
-                        type: 'Object'
-                    });
-                parentList.push(tO.Key);
-                }
-                lvl++;
-            }
-        }
-        else if (row[i] === '.'){
+    }
+    let rowHierarchy:Array<Inode> = [];
+    let parentList:Array<string|number> = [];
+    let nestMap:InestMap = tokenizeClassifier(rowname);
 
-        }
+    // check for number errors in nestMap for Array type
+    try {
+        IndexErrors(nestMap,rowname);
+    } catch (error) {
+        console.log(error);
     }
-    if (lvl === 0){
-        if (!(row in schem)){
-            schem[row] = 'String'; //Schema to String for non nested elements
-            console.log('Added '+row+' to Schem'); //ConsoleLog
+
+    for (var i:number = 0, tot:number = nestMap.modes.length;i<tot;i++){
+        let Nnode:Inode = NewNode(i-1);
+        if (nestMap.modes[i] === "Root") { // <-> if (i === 0)
+            if (nestMap.modes[i+1] === "Array" && tot > 1){
+                Schem[nestMap.tokens[i]] = []; // create key branch in Schem
+            }
+            else if (nestMap.modes[i+1] === "Object" && tot > 1) {
+                Schem[nestMap.tokens[i]] = {}; // create key branch in Schem
+            }
+            else if (tot === 1) {
+                Schem[nestMap.tokens[i]] = Nnode.type;
+            }
         }
-        hierarch.push({
-            parent:null,
-            index:null,
-            level: lvl,
-            isLeaf: true,
-            ptype:null,
-            type:'String'
-        });
+        else {
+            Nnode.parent = parentList.slice(0,i-1);
+            Nnode.ptype = nestMap.modes[i-1];
+
+            if (Nnode.ptype === "Root") { // i = 1
+                Nnode.ptype = "Object";
+            }
+
+            if (Nnode.ptype === "Array"){
+                Nnode.index = parseInt(nestMap.tokens[i-1]);
+            }
+            else if (Nnode.ptype === "Object") {
+                Nnode.key = nestMap.tokens[i-1];
+            }
+            Nnode.type = nestMap.modes[i];
+            rowHierarchy.push(Nnode);
+        }
+        parentList.push(nestMap.tokens[i]);
     }
-    else {
-        let tA:arrayParent;
-        let tO:objectParent;
-        tA = parentIsArray(row);
-        tO = parentIsObject(row);
-        if (tA.answer){
-            hierarch.push({
-                parent:parentList,
-                index:tA.index,
-                level: lvl,
-                isLeaf: true,
-                ptype:'Array',
-                type:'String'
-            });      
+    let LastNode:Inode = NewNode(tot-1);
+    if (tot > 1) {
+        LastNode.isLeaf = true;
+        LastNode.parent = parentList.slice(0,tot-1);
+        LastNode.ptype = nestMap.modes[tot-1];
+        if (LastNode.ptype === "Array") {
+            LastNode.index = parseInt(nestMap.tokens[tot-1]);
         }
-        else if (tO.answer){
-            hierarch.push({
-                parent:parentList,
-                key:tO.Key,
-                level: lvl,
-                isLeaf: true,
-                ptype:'Object',
-                type:'String'
-            });      
+        else if (LastNode.ptype === "Object") {
+            LastNode.key = nestMap.tokens[tot-1];
         }
+        rowHierarchy.push(LastNode);
     }
-    
-    let maxlvl:number = lvl-1;
-    hierarch.forEach((node)=>{
-        if (node.index === maxlvl){
-            node.isLeaf = true;
-            node.type = 'String';
-        }
-    });
-    parentList = [];
-    return hierarch;
-};
+    return rowHierarchy;
+}
+
+
+/* let str:string = "pescado";
+let Schem:object = {};
+let res:Array<Inode> = rowClassify(str,Schem);
+console.log("Nodes:")
+console.log(res);
+console.log("Schema:");
+console.log(Schem);
+ */
