@@ -93,9 +93,3 @@ export function tokenizeClassifier(rowname:string):InestMap {
     }
     return tC;
 }
-
-/* var str:string = "pescado";
-
-let res:InestMap = tokenizeClassifier(str);
-
-console.log(JSON.stringify(res,null,2)); */

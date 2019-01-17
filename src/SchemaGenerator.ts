@@ -1,6 +1,6 @@
 const csv = require("csvtojson");
 
-const csvFilePath:string = "./csvFile.csv";
+const csvFilePath:string = "./test/csvFile.csv";
 
 const readStream = require("fs").createReadStream(csvFilePath);
 
@@ -8,17 +8,16 @@ let headerList:Array<string> = [];
 
 import {Inode,rowClassify} from "./headerClassifier";
 
-let schem:object = {};
-let result:Array<Inode> = [];
+
 
 readStream.pipe(csv()
     .on("header",(header)=> {
+        let schem:object = {};
+        let result:Array<Inode> = [];
         headerList = header;
         for (var i:number = 0,tot:number = headerList.length;i<tot;i++) {
             result = result.concat(rowClassify(headerList[i],schem));
         }
-        // console.log(schem);
-        // console.log(result);
         for (var j:number = 1; j<6; j++) {
             let Fresult:Array<Inode> = result.filter((node)=> {
                 return (node.level === j);

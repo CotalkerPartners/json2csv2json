@@ -150,13 +150,3 @@ export function rowClassify(rowname:string,Schem:object):Array<Inode>{
     }
     return rowHierarchy;
 }
-
-
-/* let str:string = "pescado";
-let Schem:object = {};
-let res:Array<Inode> = rowClassify(str,Schem);
-console.log("Nodes:")
-console.log(res);
-console.log("Schema:");
-console.log(Schem);
- */
