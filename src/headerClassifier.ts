@@ -1,6 +1,6 @@
-import {InestMap} from "./tokenClassify";
+import {INestingMap} from "./tokenClassify";
 import {tokenizeClassifier} from "./tokenClassify";
-export interface Inode {
+export class Node {
     parent: (string | number)[];
     index?: number;
     key?: string;
@@ -8,20 +8,16 @@ export interface Inode {
     isLeaf: boolean;
     ptype: string;
     type: string;
+    constructor(lvl:number) {
+        this.level = lvl;
+        this.isLeaf = false;
+        this.parent = [];
+        this.type = "String"; // *pending* Incorporate user options *here*
+        this.ptype = "None";
+    }
 }
 
-function NewNode(i:number):Inode {
-    let Nnode:Inode = {
-        parent: [],
-        isLeaf: false,
-        level: i,
-        ptype:"None",
-        type: "String" // *pending* Incorporate user options *here*;
-    };
-    return Nnode;
-}
-
-function FormatErrors(rowname:string):void {
+function checkHeaderName(rowname:string):void {
     /*
     * Detects unclosed parenthesis or parenthesis inside parenthesis
     * Flags are used to signal the entrance to parenthesis
@@ -73,7 +69,7 @@ function FormatErrors(rowname:string):void {
     }
 }
 
-function IndexErrors(nestMap:InestMap,rowname:string):void {
+function IndexErrors(nestMap:INestingMap,rowname:string):void {
     if (nestMap.tokens.length !== nestMap.modes.length) {
         throw "Unexpected difference in the number of keys/indexes and modes. Cause: "+rowname;
     }
@@ -86,19 +82,19 @@ function IndexErrors(nestMap:InestMap,rowname:string):void {
     }
 }
 
-export function rowClassify(rowname:string,Schem:object):Array<Inode>{
+export function rowClassify(rowname:string,Schem:object):Array<Node> {
     // check format errors
-    FormatErrors(rowname);
+    checkHeaderName(rowname);
 
-    let rowHierarchy:Array<Inode> = [];
+    let rowHierarchy:Array<Node> = [];
     let parentList:Array<string|number> = [];
-    let nestMap:InestMap = tokenizeClassifier(rowname);
+    let nestMap:INestingMap = tokenizeClassifier(rowname);
 
     // check for number errors in nestMap for Array type
     IndexErrors(nestMap,rowname);
 
     for (var i:number = 0, tot:number = nestMap.modes.length;i<tot;i++){
-        let Nnode:Inode = NewNode(i-1);
+        let Nnode:Node = new Node(i-1);
         if (nestMap.modes[i] === "Root") { // <-> if (i === 0)
             if (nestMap.modes[i+1] === "Array" && tot > 1){
                 Schem[nestMap.tokens[i]] = []; // create key branch in Schem
@@ -129,7 +125,7 @@ export function rowClassify(rowname:string,Schem:object):Array<Inode>{
         }
         parentList.push(nestMap.tokens[i]);
     }
-    let LastNode:Inode = NewNode(tot-1);
+    let LastNode:Node = new Node(tot-1);
     if (tot > 1) {
         LastNode.isLeaf = true;
         LastNode.parent = parentList.slice(0,tot-1);

@@ -4,7 +4,7 @@ const csvFilePath:string = "./test/csvFile.csv";
 
 const readStream = require("fs").createReadStream(csvFilePath);
 
-import {Inode,rowClassify} from "./headerClassifier";
+import {Node,rowClassify} from "./headerClassifier";
 
 
 
@@ -12,16 +12,16 @@ readStream.pipe(csv()
     .on("header",(header)=> {
         let headerList:Array<string> = [];
         let schem:object = {};
-        let result:Array<Inode> = [];
+        let result:Array<Node> = [];
         headerList = header;
         for (var i:number = 0,tot:number = headerList.length;i<tot;i++) {
             result = result.concat(rowClassify(headerList[i],schem));
         }
-        let maxlvl:number = Math.max.apply(Math,result.map(function(node:Inode):number {
+        let maxlvl:number = Math.max.apply(Math,result.map(function(node:Node):number {
             return node.level;
         }));
         for (var j:number = 1; j<maxlvl; j++) {
-            let Fresult:Array<Inode> = result.filter((node)=> {
+            let Fresult:Array<Node> = result.filter((node)=> {
                 return (node.level === j);
             });
             var pathTo:any = schem;
