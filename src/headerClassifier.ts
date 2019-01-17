@@ -87,21 +87,15 @@ function IndexErrors(nestMap:InestMap,rowname:string):void {
 }
 
 export function rowClassify(rowname:string,Schem:object):Array<Inode>{
-    try {
-        FormatErrors(rowname);
-    } catch (error) {
-        console.log(error);
-    }
+    // check format errors
+    FormatErrors(rowname);
+
     let rowHierarchy:Array<Inode> = [];
     let parentList:Array<string|number> = [];
     let nestMap:InestMap = tokenizeClassifier(rowname);
 
     // check for number errors in nestMap for Array type
-    try {
-        IndexErrors(nestMap,rowname);
-    } catch (error) {
-        console.log(error);
-    }
+    IndexErrors(nestMap,rowname);
 
     for (var i:number = 0, tot:number = nestMap.modes.length;i<tot;i++){
         let Nnode:Inode = NewNode(i-1);
@@ -125,7 +119,7 @@ export function rowClassify(rowname:string,Schem:object):Array<Inode>{
             }
 
             if (Nnode.ptype === "Array"){
-                Nnode.index = parseInt(nestMap.tokens[i-1]);
+                Nnode.index = parseInt(nestMap.tokens[i-1],10);
             }
             else if (Nnode.ptype === "Object") {
                 Nnode.key = nestMap.tokens[i-1];
@@ -141,7 +135,7 @@ export function rowClassify(rowname:string,Schem:object):Array<Inode>{
         LastNode.parent = parentList.slice(0,tot-1);
         LastNode.ptype = nestMap.modes[tot-1];
         if (LastNode.ptype === "Array") {
-            LastNode.index = parseInt(nestMap.tokens[tot-1]);
+            LastNode.index = parseInt(nestMap.tokens[tot-1],10);
         }
         else if (LastNode.ptype === "Object") {
             LastNode.key = nestMap.tokens[tot-1];
