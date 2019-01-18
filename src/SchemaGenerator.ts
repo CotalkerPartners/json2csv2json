@@ -7,9 +7,7 @@ export function generateSchema(headerList:Array<string>):object {
     for (let i:number = 0;i<headerSize;i++) {
         nodeList = nodeList.concat(rowClassify(headerList[i],schema));
     }
-    let maxlvl:number = Math.max.apply(Math,nodeList.map(function(node:Node):number {
-        return node.level;
-    }));
+    let maxlvl:number = Math.max.apply(Math,nodeList.map((node:Node) => node.level));
     const nodesMap: { [level: number]: Node[] } = {};
     nodeList.forEach((node) => {
         if (!nodesMap[node.level]) {

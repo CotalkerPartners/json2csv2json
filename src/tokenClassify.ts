@@ -33,12 +33,12 @@
 
 export interface INestingMap {
     tokens: Array<string>;
-    modes: Array<string>;
+    modes: Array<"Root" | "Object" | "Array">;
 }
 
 export function tokenizeClassifier(rowName:string):INestingMap {
     let nestingMap:INestingMap = {tokens:[],modes:[]};
-    let inMode:string ="Root";
+    let inMode:("Root" | "Object" | "Array") ="Root";
     let tokenizer:Array<string>;
     while(rowName !== "") {
         nestingMap.modes.push(inMode);
@@ -76,7 +76,7 @@ export function tokenizeClassifier(rowName:string):INestingMap {
                 break;
             case "Array":
                 tokenizer = rowName.match(/\w+(?=\](\{|\[)?)/);
-                if (tokenizer[0] != null) {
+                if (tokenizer[0] !== null) {
                     nestingMap.tokens.push(tokenizer[0]);
                 }
                 if (tokenizer[1] === "{") {

@@ -6,8 +6,8 @@ export class Node {
     key?: string;
     level: number;
     isLeaf: boolean;
-    ptype: string;
-    type: string;
+    ptype: ("String" | "Array" | "Object" | "Boolean" | "Number" | "Date" | "None" | "Root");
+    type: ("String" | "Array" | "Object" | "Boolean" | "Number" | "Date" | "None" | "Root");
     constructor(level:number) {
         this.level = level;
         this.isLeaf = false;
