@@ -24,8 +24,14 @@
     "papaparse": "^4.6.3"
   },
   "devDependencies": {
+    "@angular/compiler": "^7.2.1",
+    "@angular/core": "^7.2.1",
     "@types/papaparse": "^4.5.7",
     "babel-eslint": "^10.0.1",
-    "prettier-eslint": "^8.8.2"
+    "codelyzer": "^4.5.0",
+    "prettier-eslint": "^8.8.2",
+    "rxjs": "^6.3.3",
+    "tslint": "^5.12.1",
+    "tslint-config-airbnb": "^5.11.1"
   }
 }
