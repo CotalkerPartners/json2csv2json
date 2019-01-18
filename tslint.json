@@ -129,6 +129,6 @@
     "use-pipe-transform-interface": true,
     "component-class-suffix": true,
     "directive-class-suffix": true,
-    "no-parameter-reassignment":false //Edu
+    "no-parameter-reassignment":true //Edu
   }
 }

@@ -42,15 +42,16 @@ export function tokenizeClassifier(rowName: string): INestingMap {
     modes: [],
   };
   let inMode: (`Root` | `Object` | `Array`) = `Root`;
-  while (rowName !== ``) {
+  let copyRowName: string = rowName;
+  while (copyRowName !== ``) {
     nestingMap.modes.push(inMode);
     let tokenizer: string[];
     switch (inMode) {
       case `Root`:
-        tokenizer = rowName.match(/\w+(?=(\[|\{))/);
+        tokenizer = copyRowName.match(/\w+(?=(\[|\{))/);
         if (tokenizer === null) {
-          nestingMap.tokens.push(rowName);
-          rowName = ``;
+          nestingMap.tokens.push(copyRowName);
+          copyRowName = ``;
           break;
         } else if (tokenizer.length !== 2) {
           throw `Input Error, header name generates bad reading. Cause: ${ rowName }`;
@@ -63,10 +64,10 @@ export function tokenizeClassifier(rowName: string): INestingMap {
         } else if (tokenizer[1] === `{`) {
           inMode = `Object`;
         }
-        rowName = rowName.slice(tokenizer[0].length);
+        copyRowName = copyRowName.slice(tokenizer[0].length);
         break;
       case `Object`:
-        tokenizer = rowName.match(/\w+(?=\}(\[|\{)?)/);
+        tokenizer = copyRowName.match(/\w+(?=\}(\[|\{)?)/);
         if (tokenizer[0] != null) {
           nestingMap.tokens.push(tokenizer[0]);
         }
@@ -75,10 +76,10 @@ export function tokenizeClassifier(rowName: string): INestingMap {
         } else if (tokenizer[1] === `[`) {
           inMode = `Array`;
         }
-        rowName = rowName.slice(tokenizer[0].length + 2); // length +2 includes the parenthesis
+        copyRowName = copyRowName.slice(tokenizer[0].length + 2); // length +2 includes the parenthesis
         break;
       case `Array`:
-        tokenizer = rowName.match(/\w+(?=\](\{|\[)?)/);
+        tokenizer = copyRowName.match(/\w+(?=\](\{|\[)?)/);
         if (tokenizer[0] !== null) {
           nestingMap.tokens.push(tokenizer[0]);
         }
@@ -87,7 +88,7 @@ export function tokenizeClassifier(rowName: string): INestingMap {
         } else if (tokenizer[1] === `[`) {
           inMode = `Array`;
         }
-        rowName = rowName.slice(tokenizer[0].length + 2); // length +2 includes the parenthesis
+        copyRowName = copyRowName.slice(tokenizer[0].length + 2); // length +2 includes the parenthesis
         break;
       default:
         break;
