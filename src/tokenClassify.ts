@@ -37,11 +37,11 @@ export interface INestingMap {
 }
 
 export function tokenizeClassifier(rowName:string):INestingMap {
-    let nestingMap:INestingMap = {tokens:[],modes:[]};
-    let inMode:("Root" | "Object" | "Array") ="Root";
-    let tokenizer:Array<string>;
+    let nestingMap:INestingMap = {tokens: [],modes: []};
+    let inMode:("Root" | "Object" | "Array") = "Root";
     while(rowName !== "") {
         nestingMap.modes.push(inMode);
+        let tokenizer:Array<string>;
         switch (inMode) {
             case "Root":
                 tokenizer = rowName.match(/\w+(?=(\[|\{))/);
@@ -49,6 +49,9 @@ export function tokenizeClassifier(rowName:string):INestingMap {
                     nestingMap.tokens.push(rowName);
                     rowName = "";
                     break;
+                }
+                else if (tokenizer.length !== 2) {
+                    throw "Input Error, header name generates bad reading. Cause: "+rowName;
                 }
                 if (tokenizer[0] != null) {
                     nestingMap.tokens.push(tokenizer[0]);
