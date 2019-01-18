@@ -17,7 +17,7 @@ export class Node {
     }
 }
 
-function checkHeaderName(rowname:string):void {
+function checkHeaderName(rowName:string):void {
     /*
     * Detects unclosed parenthesis or parenthesis inside parenthesis
     * Flags are used to signal the entrance to parenthesis
@@ -28,107 +28,107 @@ function checkHeaderName(rowname:string):void {
     */
    let Arrayflag:boolean = false;
    let Objectflag:boolean = false;
-   for (let i:number = 0, tot:number = rowname.length; i < tot; i++) {
-        switch (rowname[i]) {
+   for (let i:number = 0, modesSize:number = rowName.length; i < modesSize; i++) {
+        switch (rowName[i]) {
             case "[":
                 if (Arrayflag || Objectflag){
-                    throw "Format Error, bad use of '['. Cause: "+rowname;
+                    throw "Format Error, bad use of '['. Cause: "+rowName;
                 }
                 Arrayflag = true;
                 break;
             case "{":
                 if (Arrayflag || Objectflag){
-                    throw "Format Error, bad use of '{'. Cause: "+rowname;
+                    throw "Format Error, bad use of '{'. Cause: "+rowName;
                 }
                 Objectflag = true;
                 break;
             case "]":
                 if (!Arrayflag || Objectflag){
-                    throw "Format Error, bad use of ']'. Cause: "+rowname;
+                    throw "Format Error, bad use of ']'. Cause: "+rowName;
                 }
                 Arrayflag = false;
                 break;
             case "}":
                 if (!Objectflag || Arrayflag){
-                    throw "Format Error, bad use of '}'. Cause: "+rowname;
+                    throw "Format Error, bad use of '}'. Cause: "+rowName;
                 }
                 Objectflag = false;
                 break;
         }
     }
     if (Arrayflag || Objectflag) {
-        throw "Error, unclosed instance. Cause "+rowname;
+        throw "Error, unclosed instance. Cause "+rowName;
     }
 }
 
-function IndexErrors(nestMap:INestingMap,rowname:string):void {
+function indexErrors(nestMap:INestingMap,rowName:string):void {
     if (nestMap.tokens.length !== nestMap.modes.length) {
-        throw "Unexpected difference in the number of keys/indexes and modes. Cause: "+rowname;
+        throw "Unexpected difference in the number of keys/indexes and modes. Cause: "+rowName;
     }
-    for (let i:number = 0, tot:number = nestMap.tokens.length;i<tot;i++){
+    for (let i:number = 0, modesSize:number = nestMap.tokens.length;i<modesSize;i++){
         if (nestMap.modes[i] === "Array") {
             if (isNaN(Number(nestMap.tokens[i]))) {
-                throw "Index Error, not a number. Cause: "+rowname;
+                throw "Index Error, not a number. Cause: "+rowName;
             }
         }
     }
 }
 
-export function rowClassify(rowname:string,Schem:object):Array<Node> {
+export function rowClassify(rowName:string,schema:object):Array<Node> {
     // check format errors
-    checkHeaderName(rowname);
+    checkHeaderName(rowName);
 
     let rowHierarchy:Array<Node> = [];
     let parentList:Array<string|number> = [];
-    let nestMap:INestingMap = tokenizeClassifier(rowname);
+    let nestMap:INestingMap = tokenizeClassifier(rowName);
 
     // check for number errors in nestMap for Array type
-    IndexErrors(nestMap,rowname);
-    let tot:number = nestMap.modes.length;
-    for (let i:number = 0;i<tot;i++){
-        let Nnode:Node = new Node(i-1);
+    indexErrors(nestMap,rowName);
+    let modesSize:number = nestMap.modes.length;
+    for (let i:number = 0;i<modesSize;i++){
+        let nNode:Node = new Node(i-1);
         if (nestMap.modes[i] === "Root") { // <-> if (i === 0)
-            if (nestMap.modes[i+1] === "Array" && tot > 1){
-                Schem[nestMap.tokens[i]] = []; // create key branch in Schem
+            if (nestMap.modes[i+1] === "Array" && modesSize > 1){
+                schema[nestMap.tokens[i]] = []; // create key branch in schema
             }
-            else if (nestMap.modes[i+1] === "Object" && tot > 1) {
-                Schem[nestMap.tokens[i]] = {}; // create key branch in Schem
+            else if (nestMap.modes[i+1] === "Object" && modesSize > 1) {
+                schema[nestMap.tokens[i]] = {}; // create key branch in schema
             }
-            else if (tot === 1) {
-                Schem[nestMap.tokens[i]] = Nnode.type;
+            else if (modesSize === 1) {
+                schema[nestMap.tokens[i]] = nNode.type;
             }
         }
         else {
-            Nnode.parent = parentList.slice(0,i-1);
-            Nnode.ptype = nestMap.modes[i-1];
+            nNode.parent = parentList.slice(0,i-1);
+            nNode.ptype = nestMap.modes[i-1];
 
-            if (Nnode.ptype === "Root") { // i = 1
-                Nnode.ptype = "Object";
+            if (nNode.ptype === "Root") { // i = 1
+                nNode.ptype = "Object";
             }
 
-            if (Nnode.ptype === "Array"){
-                Nnode.index = parseInt(nestMap.tokens[i-1],10);
+            if (nNode.ptype === "Array"){
+                nNode.index = parseInt(nestMap.tokens[i-1],10);
             }
-            else if (Nnode.ptype === "Object") {
-                Nnode.key = nestMap.tokens[i-1];
+            else if (nNode.ptype === "Object") {
+                nNode.key = nestMap.tokens[i-1];
             }
-            Nnode.type = nestMap.modes[i];
-            rowHierarchy.push(Nnode);
+            nNode.type = nestMap.modes[i];
+            rowHierarchy.push(nNode);
         }
         parentList.push(nestMap.tokens[i]);
     }
-    let LastNode:Node = new Node(tot-1);
-    if (tot > 1) {
-        LastNode.isLeaf = true;
-        LastNode.parent = parentList.slice(0,tot-1);
-        LastNode.ptype = nestMap.modes[tot-1];
-        if (LastNode.ptype === "Array") {
-            LastNode.index = parseInt(nestMap.tokens[tot-1],10);
+    let lastNode:Node = new Node(modesSize-1);
+    if (modesSize > 1) {
+        lastNode.isLeaf = true;
+        lastNode.parent = parentList.slice(0,modesSize-1);
+        lastNode.ptype = nestMap.modes[modesSize-1];
+        if (lastNode.ptype === "Array") {
+            lastNode.index = parseInt(nestMap.tokens[modesSize-1],10);
         }
-        else if (LastNode.ptype === "Object") {
-            LastNode.key = nestMap.tokens[tot-1];
+        else if (lastNode.ptype === "Object") {
+            lastNode.key = nestMap.tokens[modesSize-1];
         }
-        rowHierarchy.push(LastNode);
+        rowHierarchy.push(lastNode);
     }
     return rowHierarchy;
 }

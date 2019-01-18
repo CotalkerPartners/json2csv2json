@@ -3,20 +3,27 @@ import {Node,rowClassify} from "./headerClassifier";
 export function generateSchema(headerList:Array<string>):object {
     let schema:object = {};
     let nodeList:Array<Node> = [];
-    for (let i:number = 0,tot:number = headerList.length;i<tot;i++) {
+    let headerSize:number = headerList.length;
+    for (let i:number = 0;i<headerSize;i++) {
         nodeList = nodeList.concat(rowClassify(headerList[i],schema));
     }
     let maxlvl:number = Math.max.apply(Math,nodeList.map(function(node:Node):number {
         return node.level;
     }));
+    const nodesMap: { [level: number]: Node[] } = {};
+    nodeList.forEach((node) => {
+        if (!nodesMap[node.level]) {
+             nodesMap[node.level] = [];
+        }
+        nodesMap[node.level].push(node);
+    } );
+
     for (let j:number = 1; j<maxlvl; j++) {
-        let nodeListPerLevel:Array<Node> = nodeList.filter((node)=> {
-            return (node.level === j);
-        });
+        let nodeListPerLevel:Array<Node> = nodesMap[j];
         let pathTo:any = schema;
         nodeListPerLevel.forEach(node => {
             pathTo = schema;
-            for (let p:number = 0, ptot:number = node.parent.length;p<ptot;p++) {
+            for (let p:number = 0, parentSize:number = node.parent.length;p<parentSize;p++) {
                 pathTo = pathTo[node.parent[p]];
             }
             let key:(string | number) = null;
