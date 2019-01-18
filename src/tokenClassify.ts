@@ -5,7 +5,7 @@
     * modes: Array of strings describing in an orderly fashion the nesting of the row value
  
 * Example: 
-    var str:string = 'pescado{perro}[90]{oso}{casa}[11]';
+    let str:string = 'pescado{perro}[90]{oso}{casa}[11]';
 
     let res:INestingMap = tokenizeClassifier(str);  
 

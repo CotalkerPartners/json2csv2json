@@ -21,9 +21,10 @@
     "@types/node": "^10.12.18",
     "csvtojson": "^2.0.8",
     "generate-schema": "^2.6.0",
-    "mongoose": "^5.4.2"
+    "papaparse": "^4.6.3"
   },
   "devDependencies": {
+    "@types/papaparse": "^4.5.7",
     "babel-eslint": "^10.0.1",
     "prettier-eslint": "^8.8.2"
   }

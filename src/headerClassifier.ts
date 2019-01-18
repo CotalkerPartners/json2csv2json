@@ -8,8 +8,8 @@ export class Node {
     isLeaf: boolean;
     ptype: string;
     type: string;
-    constructor(lvl:number) {
-        this.level = lvl;
+    constructor(level:number) {
+        this.level = level;
         this.isLeaf = false;
         this.parent = [];
         this.type = "String"; // *pending* Incorporate user options *here*
@@ -28,39 +28,31 @@ function checkHeaderName(rowname:string):void {
     */
    let Arrayflag:boolean = false;
    let Objectflag:boolean = false;
-   for (var i:number = 0, tot:number = rowname.length; i < tot; i++) {
+   for (let i:number = 0, tot:number = rowname.length; i < tot; i++) {
         switch (rowname[i]) {
             case "[":
                 if (Arrayflag || Objectflag){
                     throw "Format Error, bad use of '['. Cause: "+rowname;
                 }
-                else {
-                    Arrayflag = true;
-                }
+                Arrayflag = true;
                 break;
             case "{":
                 if (Arrayflag || Objectflag){
                     throw "Format Error, bad use of '{'. Cause: "+rowname;
                 }
-                else {
-                    Objectflag = true;
-                }
+                Objectflag = true;
                 break;
             case "]":
-                if (Arrayflag && !Objectflag){
-                    Arrayflag = false;
-                }
-                else {
+                if (!Arrayflag || Objectflag){
                     throw "Format Error, bad use of ']'. Cause: "+rowname;
                 }
+                Arrayflag = false;
                 break;
             case "}":
-                if (Objectflag && !Arrayflag){
-                    Objectflag = false;
-                }
-                else {
+                if (!Objectflag || Arrayflag){
                     throw "Format Error, bad use of '}'. Cause: "+rowname;
                 }
+                Objectflag = false;
                 break;
         }
     }
@@ -73,7 +65,7 @@ function IndexErrors(nestMap:INestingMap,rowname:string):void {
     if (nestMap.tokens.length !== nestMap.modes.length) {
         throw "Unexpected difference in the number of keys/indexes and modes. Cause: "+rowname;
     }
-    for (var i:number = 0, tot:number = nestMap.tokens.length;i<tot;i++){
+    for (let i:number = 0, tot:number = nestMap.tokens.length;i<tot;i++){
         if (nestMap.modes[i] === "Array") {
             if (isNaN(Number(nestMap.tokens[i]))) {
                 throw "Index Error, not a number. Cause: "+rowname;
@@ -93,7 +85,7 @@ export function rowClassify(rowname:string,Schem:object):Array<Node> {
     // check for number errors in nestMap for Array type
     IndexErrors(nestMap,rowname);
 
-    for (var i:number = 0, tot:number = nestMap.modes.length;i<tot;i++){
+    for (let i:number = 0, tot:number = nestMap.modes.length;i<tot;i++){
         let Nnode:Node = new Node(i-1);
         if (nestMap.modes[i] === "Root") { // <-> if (i === 0)
             if (nestMap.modes[i+1] === "Array" && tot > 1){
