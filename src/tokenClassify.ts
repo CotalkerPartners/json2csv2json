@@ -51,7 +51,7 @@ export function tokenizeClassifier(rowName:string):INestingMap {
                     break;
                 }
                 else if (tokenizer.length !== 2) {
-                    throw "Input Error, header name generates bad reading. Cause: "+rowName;
+                    throw "Input Error, header name generates bad reading. Cause: ${ rowName }";
                 }
                 if (tokenizer[0] != null) {
                     nestingMap.tokens.push(tokenizer[0]);

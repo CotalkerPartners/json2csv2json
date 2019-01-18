@@ -32,43 +32,43 @@ function checkHeaderName(rowName:string):void {
         switch (rowName[i]) {
             case "[":
                 if (Arrayflag || Objectflag){
-                    throw "Format Error, bad use of '['. Cause: "+rowName;
+                    throw "Format Error, bad use of '['. Cause: ${ rowName }";
                 }
                 Arrayflag = true;
                 break;
             case "{":
                 if (Arrayflag || Objectflag){
-                    throw "Format Error, bad use of '{'. Cause: "+rowName;
+                    throw "Format Error, bad use of '{'. Cause: ${ rowName }";
                 }
                 Objectflag = true;
                 break;
             case "]":
                 if (!Arrayflag || Objectflag){
-                    throw "Format Error, bad use of ']'. Cause: "+rowName;
+                    throw "Format Error, bad use of ']'. Cause: ${ rowName }";
                 }
                 Arrayflag = false;
                 break;
             case "}":
                 if (!Objectflag || Arrayflag){
-                    throw "Format Error, bad use of '}'. Cause: "+rowName;
+                    throw "Format Error, bad use of '}'. Cause: ${ rowName }";
                 }
                 Objectflag = false;
                 break;
         }
     }
     if (Arrayflag || Objectflag) {
-        throw "Error, unclosed instance. Cause "+rowName;
+        throw "Error, unclosed instance. Cause ${ rowName }";
     }
 }
 
 function indexErrors(nestMap:INestingMap,rowName:string):void {
     if (nestMap.tokens.length !== nestMap.modes.length) {
-        throw "Unexpected difference in the number of keys/indexes and modes. Cause: "+rowName;
+        throw "Unexpected difference in the number of keys/indexes and modes. Cause: ${ rowName }";
     }
     for (let i:number = 0, modesSize:number = nestMap.tokens.length;i<modesSize;i++){
         if (nestMap.modes[i] === "Array") {
             if (isNaN(Number(nestMap.tokens[i]))) {
-                throw "Index Error, not a number. Cause: "+rowName;
+                throw "Index Error, not a number. Cause: ${ rowName }";
             }
         }
     }
