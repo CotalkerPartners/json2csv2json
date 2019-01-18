@@ -84,8 +84,8 @@ export function rowClassify(rowname:string,Schem:object):Array<Node> {
 
     // check for number errors in nestMap for Array type
     IndexErrors(nestMap,rowname);
-
-    for (let i:number = 0, tot:number = nestMap.modes.length;i<tot;i++){
+    let tot:number = nestMap.modes.length;
+    for (let i:number = 0;i<tot;i++){
         let Nnode:Node = new Node(i-1);
         if (nestMap.modes[i] === "Root") { // <-> if (i === 0)
             if (nestMap.modes[i+1] === "Array" && tot > 1){
