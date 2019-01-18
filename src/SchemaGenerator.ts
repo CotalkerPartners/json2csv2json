@@ -18,7 +18,7 @@ export function generateSchema(headerList:Array<string>):object {
         nodesMap[node.level].push(node);
     } );
 
-    for (let j:number = 1; j<maxlvl; j++) {
+    for (let j:number = 1; j<=maxlvl; j++) {
         let nodeListPerLevel:Array<Node> = nodesMap[j];
         let pathTo:any = schema;
         nodeListPerLevel.forEach(node => {
