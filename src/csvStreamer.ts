@@ -25,14 +25,13 @@ function parseRows(csvPath: string) {
   const csv = require(`csv-parser`);
   return headerLoader(csvPath, (err, header) => {
     if (err) {
-      console.log('err', err);
+      throw err;
     } else {
       console.log(`Header: `, header);
       const schema = generateSchema(header);
       const readStream = fs.createReadStream(csvPath)
       .pipe(csv())
       .on(`data`, (data) => {
-        // Parse to csvParser
         const obj = csvDataToJSON(schema, data);
         console.log(JSON.stringify(obj, null, 2)); // Replace console log with stream export
       })
@@ -46,5 +45,5 @@ function parseRows(csvPath: string) {
 
 function getHeaderConfig(header: string[]) {
 }
-// headerLoader('./test/csvFile.csv');
+
 parseRows(`./test/csvFile.csv`);
