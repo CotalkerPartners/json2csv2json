@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Moblox/json2csv2json#readme",
   "dependencies": {
     "@types/node": "^10.12.18",
+    "csv-parser": "^2.1.0",
     "csvtojson": "^2.0.8",
     "generate-schema": "^2.6.0",
     "papaparse": "^4.6.3"
