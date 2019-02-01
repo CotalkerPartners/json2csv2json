@@ -35,7 +35,7 @@ c2j.printConfig();
 /*
 { 
   separator: ',',
-  header: true,
+  hasHeader: true,
   rows: [
     {
       rowID: 0,
@@ -96,7 +96,7 @@ c2j.printConfig();
 /*
 { 
   separator: ',',
-  header: true,
+  hasHeader: true,
   rows: [
     {
       rowID: 0,
@@ -145,7 +145,7 @@ Reprocess the JSON output structure like this:
  # Usage csv2json
  
  ```javascript
- const CSV2JSON = require('j2c2j').JSONtoCSV;
+ const CSV2JSON = require('j2c2j').CSV2JSON;
  const fs = require('fs')
  
  const csvPath = 'path/to/csvFile.csv'
@@ -157,7 +157,7 @@ Reprocess the JSON output structure like this:
  ```javascript
   const c2j = CSV2JSON('Name, lastName, Active, Charge', headerAsString = true);
  ```
- Or if you need to input the properties (for example in cases where the .csv file has no headers), just call the constructor and then modify csj's properties:
+ Or if you need to input the properties (for example in cases where the .csv file has no headers), just call the constructor and then modify c2j's properties:
  
 ```javascript
   const c2j = CSV2JSON();
@@ -262,9 +262,9 @@ fs.createReadstream(csvPath)
  ```javascript
 const jsonPath = 'path/to/file' 
 
-const CSVtoJSON = require('j2c2j').JSONtoCSV
+const JSON2CSV = require('j2c2j').JSONtoCSV
 
-const j2c = JSONtoCSV();
+const j2c = JSON2CSV();
 
 const fs = require('fs');
 
