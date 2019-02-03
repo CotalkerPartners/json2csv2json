@@ -1,5 +1,6 @@
 import { Transform } from 'stream';
 import firstline = require('firstline');
+import { generateSchema } from './SchemaGenerator';
 
 interface IrowConfig {
   rowID: number;
@@ -20,6 +21,7 @@ class CSV2JSON extends Transform {
   separator: string;
   hasHeader: boolean;
   rows: IrowConfig[];
+  schema: object;
   constructor(headersOrCsvPath: string, config: IconfigObj, headerAsString: boolean) {
     super({ writableObjectMode: true });
     if (config === undefined) {
@@ -37,11 +39,29 @@ class CSV2JSON extends Transform {
       this.headerList = firstline(headersOrCsvPath).split(this.separator).map(h => h.trim());
     }
 
-    if (this.headerList !== [] && this.headerList !== undefined && this.rows !== []) {
+    if (this.headerList !== [] && this.headerList !== undefined && this.rows === []) {
       this.configRows(this.headerList);
     }
   }
   configRows(headerList) {
-    // implementar configuración de columnas
+    const headerLength: number = headerList.length;
+    for (let i = 0; i < headerLength; i += 1) {
+      const headerElement: string = headerList[i];
+      const rowObj: IrowConfig = {
+        rowID: i,
+        read: true,
+        type: 'String',
+        headerName: headerElement,
+        objectPath: headerElement,
+      };
+      this.rows.push(rowObj);
+    }
+  }
+
+  printSchema() {
+    const pathList = this.rows.filter(rowConfig => rowConfig.read)
+    .map(rowConfig => rowConfig.objectPath);
+    this.schema = generateSchema(pathList);
+    console.log(JSON.stringify(this.schema, null, 2));
   }
 }
