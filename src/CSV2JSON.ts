@@ -2,6 +2,7 @@ import { Transform } from 'stream';
 import firstline = require('firstline');
 import { generateSchema } from './SchemaGenerator';
 import { csvDataToJSON } from './csvParser';
+const csv = require('csv-parser');
 
 interface IrowConfig {
   rowID: number;
@@ -17,7 +18,7 @@ interface IconfigObj {
   rows?: IrowConfig[];
 }
 
-class CSV2JSON extends Transform {
+export class CSV2JSON extends Transform {
   headerList: string[];
   separator: string;
   hasHeader: boolean;
@@ -65,9 +66,8 @@ class CSV2JSON extends Transform {
     this.schema = generateSchema(pathList);
     console.log(JSON.stringify(this.schema, null, 2));
   }
-
-  _transform(data, encoding, callback) {
-    const csv = require('csv-parser');
+  // tslint:disable-next-line
+  _transform(data, encoding, callback) { 
     this.on('pipe', (source) => {
       source.unpipe(this);
       source.pipe(csv({ separator: this.separator, headers: this.hasHeader }))
