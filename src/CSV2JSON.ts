@@ -1,6 +1,7 @@
 import { Transform } from 'stream';
 import firstline = require('firstline');
 import { generateSchema } from './SchemaGenerator';
+import { csvDataToJSON } from './csvParser';
 
 interface IrowConfig {
   rowID: number;
@@ -63,5 +64,38 @@ class CSV2JSON extends Transform {
     .map(rowConfig => rowConfig.objectPath);
     this.schema = generateSchema(pathList);
     console.log(JSON.stringify(this.schema, null, 2));
+  }
+
+  _transform(data, encoding, callback) {
+    const csv = require('csv-parser');
+    this.on('pipe', (source) => {
+      source.unpipe(this);
+      source.pipe(csv({ separator: this.separator, headers: this.hasHeader }))
+      .on('header', (header) => {
+        if (this.rows === [] && this.hasHeader === true) {
+          this.schema = generateSchema(header);
+          this.configRows(header);
+        }
+      })
+      .on('data', (csvData: string[]) => {
+        if (this.schema === {} || this.schema === undefined) {
+          setTimeout(() => {
+            if (this.schema === {} || this.schema === undefined) {
+              throw `Error. Timeout, schema not generated`;
+            } else {
+              const obj = csvDataToJSON(this.schema, csvData);
+              this.push(obj);
+            }
+          }, 1000);
+        } else {
+          const obj = csvDataToJSON(this.schema, csvData);
+          this.push(obj);
+        }
+      });
+    })
+    .on('error', (err) => {
+      throw err;
+    });
+    callback();
   }
 }

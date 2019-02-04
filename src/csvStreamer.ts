@@ -23,15 +23,6 @@ function headerLoader(csvPath: string, callback) {
 function parseRows(csvPath: string) {
   const fs = require(`fs`);
   const csv = require(`csv-parser`);
-  const Writable = require(`stream`).Writable;
-  const ws = Writable({ objectMode: true });
-  ws._write = function (chunk, enc, callback) {
-    console.log(chunk);
-    console.log('--------- XXX -------');
-    // process.stdout.on('data', chunk);
-
-    callback();
-  };
 
   return headerLoader(csvPath, (err, header) => {
     if (err) {
@@ -44,10 +35,9 @@ function parseRows(csvPath: string) {
       .on(`data`, (data) => {
         const obj = csvDataToJSON(schema, data);
         // Stream export
-        ws.write(obj);
+        console.log(JSON.stringify(obj, null, 2));
       })
       .on(`end`, () => {
-        ws.end();
         console.log(`***End***`);
       });
     }
