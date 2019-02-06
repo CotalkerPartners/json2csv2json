@@ -44,6 +44,9 @@ export class CSV2JSON extends Transform {
         this.schema = generateSchema(this.columns.map(column => column.objectPath));
       } else this.columns = [];
     }
+    if (!headerAsString && config.hasHeader === false) {
+      throw 'Error. Header not as input nor in file. You must provide the complete header row in some way';
+    }
     if (headerAsString && headersOrCsvPath !== undefined) {
       this.headerList = headersOrCsvPath.split(this.separator).map(h => h.trim());
     } else if (headersOrCsvPath !== undefined && this.hasHeader) {
