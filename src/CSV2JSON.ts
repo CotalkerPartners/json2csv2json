@@ -46,7 +46,7 @@ export class CSV2JSON extends Transform {
         .map(column => column.objectPath));
       } else this.columns = [];
     }
-    if (!headerAsString && config.hasHeader === false) {
+    if (!headerAsString && this.hasHeader === false) {
       throw 'Error. Header not as input nor in file. You must provide the complete header row in some way';
     }
     if (headerAsString && headersOrCsvPath !== undefined) {
