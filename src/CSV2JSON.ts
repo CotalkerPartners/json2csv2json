@@ -25,11 +25,12 @@ export class CSV2JSON extends Transform {
   schema: object;
   remainder: string;
   readColumns: object;
-  beganPipe: boolean;
+  loadedHeaders: boolean;
   constructor(headersOrCsvPath: string, config: IconfigObj, headerAsString: boolean) {
     super({ writableObjectMode: true, objectMode: true });
     this.remainder = '';
-    this.beganPipe = false;
+    this.loadedHeaders = false;
+    this.readColumns = {};
     if (config === undefined) {
       this.separator = ',';
       this.hasHeader = true;
@@ -41,7 +42,8 @@ export class CSV2JSON extends Transform {
       } else this.hasHeader = true;
       if (config.columns !== undefined) {
         this.columns = config.columns;
-        this.schema = generateSchema(this.columns.map(column => column.objectPath));
+        this.schema = generateSchema(this.columns.filter(column => column.read)
+        .map(column => column.objectPath));
       } else this.columns = [];
     }
     if (!headerAsString && config.hasHeader === false) {
@@ -49,29 +51,31 @@ export class CSV2JSON extends Transform {
     }
     if (headerAsString && headersOrCsvPath !== undefined) {
       this.headerList = headersOrCsvPath.split(this.separator).map(h => h.trim());
+      this.loadedHeaders = true;
     } else if (headersOrCsvPath !== undefined && this.hasHeader) {
       firstline(headersOrCsvPath)
       .then((headerLine) => {
         this.headerList = headerLine.split(this.separator).map(h => h.trim());
+        this.loadedHeaders = true;
       });
     }
 
-    if (this.headerList !== [] && this.headerList !== undefined) {
+    if (this.loadedHeaders) {
       if (this.columns === []) {
         this.configColumns(this.headerList);
-        this.columns.forEach((column) => {
-          if (column.read) {
-            this.readColumns[column.headerName] = true;
-          }
-        });
-        const pathList = this.columns.map((column) => {
-          if (this.readColumns[column.headerName]) {
-            return column.objectPath;
-          }
-        });
+        this.generateReadColumns(this.columns);
       }
     }
   }
+
+  generateReadColumns(columns) {
+    this.columns.forEach((column) => {
+      if (column.read) {
+        this.readColumns[column.headerName] = column.objectPath;
+      }
+    });
+  }
+
   configColumns(headerList) {
     const headerLength: number = headerList.length;
     for (let i = 0; i < headerLength; i += 1) {
@@ -111,36 +115,34 @@ export class CSV2JSON extends Transform {
         this.configColumns(this.headerList);
         console.log('Generated schema from first row:');
         this.printSchema();
-      } else if (this.hasHeader && !this.beganPipe) {
-        this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
+        this.loadedHeaders = true;
+        this.generateReadColumns(this.columns);
       }
-      this.beganPipe = true;
       const lastChar = dataString[dataString.length - 1];
       if (lastChar === '\n' || lastChar === '\r') {
         this.remainder = '';
       } else {
         this.remainder = dataLines.pop();
       }
-      if (this.headerList === []) {
+      if (!this.loadedHeaders && this.hasHeader) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
+        this.loadedHeaders = true;
+        this.generateReadColumns(this.columns);
       }
       const objectPaths = {};
       this.columns.forEach((column) => {
-        objectPaths[column.objectPath] = '';
+        if (column.read) objectPaths[column.objectPath] = '';
       });
       dataLines.forEach((row) => {
         const values = row.split(this.separator);
-        // Queda implementar ausencia de filas en la configuración
         const totalColumns = values.length;
         if (!this.readColumns) {
           this.readColumns = {};
-          this.columns.forEach((col) => {
-            if (col.read) this.readColumns[col.headerName] = true;
-          });
+          this.generateReadColumns(this.columns);
         }
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
-            objectPaths[this.headerList[i]] = values[i];
+            objectPaths[this.readColumns[this.headerList[i]]] = values[i];
           }
         }
         const obj = csvDataToJSON(this.schema, objectPaths);

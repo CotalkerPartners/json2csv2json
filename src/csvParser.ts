@@ -18,7 +18,7 @@ export function csvDataToJSON(schema: object, rowData: object) {
         path = path[parseInt(nestingMap.tokens[i], 10)];
       }
     }
-    if (nestingMap.modes[nestingMap.modes[nestingSize - 1]] === 'Object' && nestingSize > 1) {
+    if (nestingMap.modes[nestingSize - 1] === 'Object' && nestingSize > 1) {
       path[nestingMap.tokens[nestingSize - 1]] = rowData[rowPath];
     } else if (nestingMap.modes[nestingSize - 1] === 'Array' && nestingSize > 1) {
       path[parseInt(nestingMap.tokens[nestingSize - 1], 10)] = rowData[rowPath];
