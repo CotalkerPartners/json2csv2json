@@ -17,7 +17,33 @@ Maps Initialy to JSONs like this
   Charge: Developer
 }
  ```
- 
+The useful feature of this library is the fact that you can nest the row values depending on the header name or on the preprocessing configuration with the use of '{}' to represent objects and '[]' to represent arrays. For example, if I have a column like this:
+
+```csv
+ocean{reef}[2]{fish}[1]{name}
+Nemo
+Dory
+Marlin
+```
+it maps to (or in) an object like this:
+ ```javascript
+{
+  ocean: {
+    reef: [
+      null,
+      null,
+      {
+        fish: [
+          null,
+          {
+            name: 'Nemo'
+          }
+        ]
+      }
+    ]
+  }
+}
+ ```
 # Configuration CSV2JSON
 
 
