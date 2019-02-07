@@ -1,8 +1,7 @@
 import { Transform } from 'stream';
-import firstline = require('firstline');
 import { generateSchema } from './SchemaGenerator';
 import { csvDataToJSON } from './csvParser';
-
+const _ = require('lodash');
 interface IcolumnConfig {
   columnNum: number;
   read: boolean;
@@ -26,11 +25,13 @@ export class CSV2JSON extends Transform {
   remainder: string;
   readColumns: object;
   loadedHeaders: boolean;
-  constructor(headersOrCsvPath: string, config: IconfigObj, headerAsString: boolean) {
+  parsedRows: number;
+  constructor(headersString: string, config: IconfigObj) {
     super({ writableObjectMode: true, objectMode: true });
     this.remainder = '';
     this.loadedHeaders = false;
     this.readColumns = {};
+    this.parsedRows = 0;
     if (config === undefined) {
       this.separator = ',';
       this.hasHeader = true;
@@ -46,24 +47,18 @@ export class CSV2JSON extends Transform {
         .map(column => column.objectPath));
       } else this.columns = [];
     }
-    if (!headerAsString && this.hasHeader === false) {
+    if (!headersString && this.hasHeader === false) {
       throw 'Error. Header not as input nor in file. You must provide the complete header row in some way';
     }
-    if (headerAsString && headersOrCsvPath !== undefined) {
-      this.headerList = headersOrCsvPath.split(this.separator).map(h => h.trim());
+    if (headersString !== undefined) {
+      this.headerList = headersString.split(this.separator).map(h => h.trim());
       this.loadedHeaders = true;
-    } else if (headersOrCsvPath !== undefined && this.hasHeader) {
-      firstline(headersOrCsvPath)
-      .then((headerLine) => {
-        this.headerList = headerLine.split(this.separator).map(h => h.trim());
-        this.loadedHeaders = true;
-      });
     }
-
     if (this.loadedHeaders) {
-      if (this.columns === []) {
+      if (this.columns.length === 0) {
         this.configColumns(this.headerList);
         this.generateReadColumns(this.columns);
+        if (_.isEmpty(this.schema)) this.schema = generateSchema(this.headerList);
       }
     }
   }
@@ -74,6 +69,15 @@ export class CSV2JSON extends Transform {
         this.readColumns[column.headerName] = column.objectPath;
       }
     });
+  }
+
+  printConfig() {
+    const configObj: IconfigObj = {
+      separator: this.separator,
+      hasHeader: this.hasHeader,
+      columns: this.columns,
+    };
+    console.log(JSON.stringify(configObj, null, 2));
   }
 
   configColumns(headerList) {
@@ -110,7 +114,7 @@ export class CSV2JSON extends Transform {
       } else {
         dataLines[0] = this.remainder + dataLines[0];
       }
-      if (!this.headerList && !this.schema) {
+      if (!this.headerList && _.isEmpty(this.schema) && !this.loadedHeaders) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
         this.configColumns(this.headerList);
         console.log('Generated schema from first row:');
@@ -128,6 +132,8 @@ export class CSV2JSON extends Transform {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
         this.loadedHeaders = true;
         this.generateReadColumns(this.columns);
+      } else if (this.hasHeader && this.parsedRows === 0) {
+        dataLines.shift();
       }
       const objectPaths = {};
       this.columns.forEach((column) => {
@@ -136,7 +142,7 @@ export class CSV2JSON extends Transform {
       dataLines.forEach((row) => {
         const values = row.split(this.separator);
         const totalColumns = values.length;
-        if (!this.readColumns) {
+        if (_.isEmpty(this.readColumns)) {
           this.readColumns = {};
           this.generateReadColumns(this.columns);
         }
@@ -147,7 +153,7 @@ export class CSV2JSON extends Transform {
         }
         const obj = csvDataToJSON(this.schema, objectPaths);
         this.push(obj);
-
+        this.parsedRows += 1;
       });
     }
     callback();
