@@ -13,6 +13,7 @@
         "./test/streamHeaderInput.test.ts",
         "./test/testStreaming.ts",
         "./test/nestingTokenize.test.ts",
+        "./test/objectParser.test.ts",
     ],
     "include": [
         "./src/**/*",
