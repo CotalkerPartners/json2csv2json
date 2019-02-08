@@ -11,7 +11,8 @@
         "./test/SchemaGenerator.test.ts",
         "./test/streamHeaderConfig.test.ts",
         "./test/streamHeaderInput.test.ts",
-        "./test/testStreaming.ts"
+        "./test/testStreaming.ts",
+        "./test/nestingTokenize.test.ts",
     ],
     "include": [
         "./src/**/*",
