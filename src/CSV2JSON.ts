@@ -95,21 +95,20 @@ export class CSV2JSON extends Transform {
     }
   }
 
-  printSchema() {
+  getSchema() {
     const pathList = this.columns.filter(columnConfig => columnConfig.read)
     .map(columnConfig => columnConfig.objectPath);
     this.schema = generateSchema(pathList);
-    console.log(JSON.stringify(this.schema, null, 2));
+    return this.schema;
   }
 
   // tslint:disable-next-line
   _transform(data: Buffer, encoding, callback) {
-    const dataString = data.toString();
-    const dataLines = dataString.split(/\r\n|\r|\n/).filter(line => line !== '');
-    if (dataLines && !dataString.match(/\r\n|\r|\n/)) {
+    const dataLines = data.toString().split(/\r\n|\r|\n/).filter(line => line !== '');
+    if (dataLines && !data.toString().match(/\r\n|\r|\n/)) {
       this.remainder += dataLines.pop();
     } else {
-      if ((dataString[0] === '\n' || dataString[0] === '\r') && this.remainder) {
+      if ((data.slice(0, 1).toString() === '\n' || data.slice(0, 1).toString() === '\r') && this.remainder) {
         dataLines.unshift(this.remainder);
       } else {
         dataLines[0] = this.remainder + dataLines[0];
@@ -117,12 +116,11 @@ export class CSV2JSON extends Transform {
       if (!this.headerList && _.isEmpty(this.schema) && !this.loadedHeaders) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
         this.configColumns(this.headerList);
-        console.log('Generated schema from first row:');
-        this.printSchema();
+        this.schema = generateSchema(this.headerList);
         this.loadedHeaders = true;
         this.generateReadColumns(this.columns);
       }
-      const lastChar = dataString[dataString.length - 1];
+      const lastChar = data.slice(data.length - 1, data.length).toString();
       if (lastChar === '\n' || lastChar === '\r') {
         this.remainder = '';
       } else {
