@@ -32,22 +32,13 @@ export class CSV2JSON extends Transform {
     this.loadedHeaders = false;
     this.readColumns = {};
     this.parsedRows = 0;
-    if (config === undefined) {
-      this.separator = ',';
-      this.hasHeader = true;
-      this.columns = [];
-    } else {
-      if (config.separator) this.separator = config.separator; else this.separator = ',';
-      if (config.hasHeader !== undefined) {
-        this.hasHeader = config.hasHeader;
-      } else this.hasHeader = true;
-      if (config.columns !== undefined) {
-        this.columns = config.columns;
-        this.schema = generateSchema(this.columns.filter(column => column.read)
-        .map(column => column.objectPath));
-      } else this.columns = [];
+    this.separator = (config && config.separator) || ',';
+    this.hasHeader = (config && config.hasHeader) || true;
+    this.columns = (config && config.columns) || [];
+    if (this.columns.length > 0) {
+      this.schema = generateSchema(this.columns.filter(column => column.read).map(column => column.objectPath));
     }
-    if (!headersString && this.hasHeader === false) {
+    if (!headersString && !this.hasHeader) {
       throw 'Error. Header not as input nor in file. You must provide the complete header row in some way';
     }
     if (headersString !== undefined) {
@@ -71,13 +62,13 @@ export class CSV2JSON extends Transform {
     });
   }
 
-  printConfig() {
+  getConfig() {
     const configObj: IconfigObj = {
       separator: this.separator,
       hasHeader: this.hasHeader,
       columns: this.columns,
     };
-    console.log(JSON.stringify(configObj, null, 2));
+    return configObj;
   }
 
   configColumns(headerList) {
