@@ -110,6 +110,7 @@ export class CSV2JSON extends Transform {
         this.schema = generateSchema(this.headerList);
         this.loadedHeaders = true;
         this.generateReadColumns(this.columns);
+        this.parsedRows += 1;
       }
       const lastChar = data.slice(data.length - 1, data.length).toString();
       if (lastChar === '\n' || lastChar === '\r') {
@@ -144,6 +145,21 @@ export class CSV2JSON extends Transform {
         this.push(obj);
         this.parsedRows += 1;
       });
+    }
+    callback();
+  }
+  // tslint:disable-next-line
+  _final(callback) {
+    if (this.remainder !== '') {
+      const rowData = this.remainder.split(this.separator);
+      const rowFieldNum = rowData.length;
+      if (rowFieldNum === this.headerList.length) {
+        const rowObj = {};
+        for (let i = 0; i < rowFieldNum; i += 1) {
+          rowObj[this.headerList[i]] = rowData[i];
+        }
+        this.push(csvDataToJSON(this.schema, rowObj));
+      }
     }
     callback();
   }
