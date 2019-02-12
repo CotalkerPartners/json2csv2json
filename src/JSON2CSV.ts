@@ -25,15 +25,19 @@ export class JSON2CSV extends Transform {
   separator: string;
   hasHeader: boolean;
   errorOnNull: boolean;
+  passedHeader: boolean;
   constructor(objectSchema: object, config: IconfigObj) {
     super({ objectMode: true });
     this.pathListLoaded = false;
+    this.passedHeader = false;
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
     this.errorOnNull = (config && config.errorOnNull) || false;
     this.objectSchema = objectSchema || {};
     if (config) {
-      this.columns = config.columns; // Aplicar sort por columnNum
+      this.columns = config.columns.sort((a, b) => {
+        return a.columnNum - b.columnNum;
+      });
       this.pathList = this.columns.map((column) => {
         if (column.read) return column.objectPath;
       });
@@ -70,13 +74,14 @@ export class JSON2CSV extends Transform {
   }
   // tslint:disable-next-line
   _transform(chunk, enc, callback) {
+    let row = '';
     if (!this.pathListLoaded) {
       // Generate config and pathList with the first passed object
-      let row = '';
       this.generateConfig(chunk);
       if (this.hasHeader) {
         row = this.pathList.join(this.separator);
         row += '\n';
+        this.passedHeader = true;
       }
       row += objectParser(chunk, this.pathList, {
         errorOnNull: this.errorOnNull,
@@ -84,7 +89,14 @@ export class JSON2CSV extends Transform {
       });
       this.push(row);
     } else {
-      const row = objectParser(chunk, this.pathList, {
+      if (this.hasHeader && !this.passedHeader) {
+        row += this.columns.map((column) => {
+          return column.headerName;
+        }).join(this.separator);
+        row += '\n';
+        this.passedHeader = true;
+      }
+      row += objectParser(chunk, this.pathList, {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
       });
