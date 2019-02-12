@@ -1,7 +1,7 @@
 import { CSV2JSON } from '../src/CSV2JSON';
 const fs = require('fs');
 
-const pathCSV = './test/csvFile.csv';
+const pathCSV = './csvFile_large.csv';
 const c2j = new CSV2JSON(undefined, undefined);
 let str = '';
 fs.createReadStream(pathCSV)

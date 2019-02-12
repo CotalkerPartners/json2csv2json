@@ -26,7 +26,8 @@ export function nestingTokenize(obj: object): string[] {
       if (typeof(path) === 'object') {
         objectFlag = true;
         if (Array.isArray(path)) {
-          Object.keys(path).forEach((index) => {
+          Object.keys(path).filter(k => path[parseInt(k, 10)])
+          .forEach((index) => {
             tempList.push(`${key}[${index}]`);
           });
         } else {
@@ -50,12 +51,7 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
   const rowSize = pathHeader.length;
   let path = obj;
   let row = '';
-  let separator = ',';
-  if (config) {
-    if (config.separator) {
-      separator = config.separator;
-    }
-  }
+  const separator = (config && config.separator) || ',';
   for (let i = 0; i < rowSize; i += 1) {
     const nesting = tokenizeClassifier(pathHeader[i]);
     const nestingSize = nesting.modes.length;
@@ -78,5 +74,8 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
     if (path) row += String(path) + separator;
     path = obj;
   }
+  // Remove last char, a separator:
+  row = row.slice(0, row.length - 1);
+  row += '\n';
   return row;
 }
