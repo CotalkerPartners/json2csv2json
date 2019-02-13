@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const pathCSV = './test/csvFile_large.csv';
 const j2c = new JSON2CSV(undefined, {
-  separator: ',',
+  separator: ';',
   columns: [
     {
       columnNum: 1,
@@ -23,8 +23,14 @@ const j2c = new JSON2CSV(undefined, {
   ],
 });
 const c2j = new CSV2JSON(undefined, undefined);
-
+let i = 0;
 fs.createReadStream(pathCSV)
 .pipe(c2j)
 .pipe(j2c)
-.pipe(process.stdout);
+.on('data', (data) => {
+  i += 1;
+  if (i % 100000 === 0) {
+    console.log(i);
+    console.log(data);
+  }
+});
