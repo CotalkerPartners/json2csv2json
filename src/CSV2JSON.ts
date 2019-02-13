@@ -129,13 +129,13 @@ export class CSV2JSON extends Transform {
       this.columns.forEach((column) => {
         if (column.read) objectPaths[column.objectPath] = '';
       });
+      if (_.isEmpty(this.readColumns)) {
+        this.readColumns = {};
+        this.generateReadColumns(this.columns);
+      }
       dataLines.forEach((row) => {
         const values = row.split(this.separator);
         const totalColumns = values.length;
-        if (_.isEmpty(this.readColumns)) {
-          this.readColumns = {};
-          this.generateReadColumns(this.columns);
-        }
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
             objectPaths[this.readColumns[this.headerList[i]]] = values[i];

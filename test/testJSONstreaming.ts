@@ -2,7 +2,7 @@ import { JSON2CSV } from '../src/JSON2CSV';
 import { CSV2JSON } from '../src/CSV2JSON';
 const fs = require('fs');
 
-const pathCSV = './test/csvFile.csv';
+const pathCSV = './test/csvFile_large.csv';
 const j2c = new JSON2CSV(undefined, {
   separator: ',',
   columns: [
