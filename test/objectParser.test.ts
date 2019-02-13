@@ -26,6 +26,6 @@ const headerRow = nestingTokenize(testobj);
 
 describe('Object Parser to row string', () => {
   it('should return a row string with the object prperties', () => {
-    chai.expect(objectParser(testobj, headerRow, undefined)).to.equal('Eduardo,55555,66666,Beale,99,Mail,Boxes,Amazon,7341231,');
+    chai.expect(objectParser(testobj, headerRow, undefined)).to.equal('Eduardo,55555,66666,Beale,99,Mail,Boxes,Amazon,7341231\n');
   });
 });

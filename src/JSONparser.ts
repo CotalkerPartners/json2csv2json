@@ -74,8 +74,8 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
     if (path) row += String(path) + separator;
     path = obj;
   }
-  // Remove last char, a separator:
-  row = row.slice(0, row.length - 1);
+  // Remove last separator:
+  row = row.slice(0, row.length - separator.length);
   row += '\n';
   return row;
 }

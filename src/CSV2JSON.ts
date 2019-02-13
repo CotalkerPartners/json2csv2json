@@ -136,6 +136,9 @@ export class CSV2JSON extends Transform {
       dataLines.forEach((row) => {
         const values = row.split(this.separator);
         const totalColumns = values.length;
+        if (totalColumns !== this.headerList.length) {
+          throw `Row ${this.parsedRows} with different number of values than header\n${row}\n`;
+        }
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
             objectPaths[this.readColumns[this.headerList[i]]] = values[i];
