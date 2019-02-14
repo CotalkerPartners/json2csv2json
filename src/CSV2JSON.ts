@@ -95,6 +95,11 @@ export class CSV2JSON extends Transform {
 
   // tslint:disable-next-line
   _transform(data: Buffer, encoding, callback) {
+    if (_.isEmpty(this.schema) && this.columns.length > 0) {
+      this.schema =  generateSchema(this.columns.map((col) => {
+        return col.objectPath;
+      }));
+    }
     const dataLines = data.toString().split(/\r\n|\r|\n/).filter(line => line !== '');
     if (dataLines && !data.toString().match(/\r\n|\r|\n/)) {
       this.remainder += dataLines.pop();
@@ -106,7 +111,7 @@ export class CSV2JSON extends Transform {
       }
       if (!this.headerList && _.isEmpty(this.schema) && !this.loadedHeaders) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
-        this.configColumns(this.headerList);
+        if (!this.columns) this.configColumns(this.headerList);
         this.schema = generateSchema(this.headerList);
         this.loadedHeaders = true;
         this.generateReadColumns(this.columns);
