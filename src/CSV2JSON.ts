@@ -5,7 +5,13 @@ const _ = require('lodash');
 interface IcolumnConfig {
   columnNum: number;
   read: boolean;
-  type: string; // Change afterwards to string literals ('String' |'Integer' | 'Boolean' | 'Date') etc
+  type: (
+    'string' |
+    'integer' |
+    'boolean' |
+    'float' |
+    'number' |
+    'date'); // Change afterwards to string literals ('string' | 'integer' | 'boolean' | 'date') etc
   headerName: string;
   objectPath: string;
 }
@@ -78,7 +84,7 @@ export class CSV2JSON extends Transform {
       const columnObj: IcolumnConfig = {
         columnNum: i,
         read: true,
-        type: 'String',
+        type: 'string',
         headerName: headerElement,
         objectPath: headerElement,
       };
@@ -93,6 +99,26 @@ export class CSV2JSON extends Transform {
     return this.schema;
   }
 
+  typeParser(stringValue, typeval) {
+    let val = null;
+    switch (typeval) {
+      case 'string':
+        val = stringValue;
+        break;
+      case 'boolean':
+        val = (stringValue === 'true' || stringValue === 'True');
+        break;
+      case 'integer':
+        val = parseInt(stringValue, 10);
+        break;
+      case 'float':
+        val = parseFloat(stringValue);
+        break;
+      default:
+        val = stringValue;
+    }
+    return val;
+  }
   // tslint:disable-next-line
   _transform(data: Buffer, encoding, callback) {
     if (_.isEmpty(this.schema) && this.columns.length > 0) {
@@ -132,12 +158,13 @@ export class CSV2JSON extends Transform {
       }
       const objectPaths = {};
       this.columns.forEach((column) => {
-        if (column.read) objectPaths[column.objectPath] = '';
+        if (column.read) objectPaths[column.objectPath] = column.type;
       });
       if (_.isEmpty(this.readColumns)) {
         this.readColumns = {};
         this.generateReadColumns(this.columns);
       }
+      let typeval = '';
       dataLines.forEach((row) => {
         const values = row.split(this.separator);
         const totalColumns = values.length;
@@ -146,7 +173,8 @@ export class CSV2JSON extends Transform {
         }
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
-            objectPaths[this.readColumns[this.headerList[i]]] = values[i];
+            typeval = objectPaths[this.readColumns[this.headerList[i]]];
+            objectPaths[this.readColumns[this.headerList[i]]] = this.typeParser(values[i], typeval);
           }
         }
         const obj = csvDataToJSON(this.schema, objectPaths);

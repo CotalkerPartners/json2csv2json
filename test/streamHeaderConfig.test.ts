@@ -32,7 +32,7 @@ function testCSVPathStream(callback) {
       columnNum: 0,
       headerName: 'email',
       objectPath: 'Contact{email}',
-      type: 'String',
+      type: 'string',
       read: true,
     },
   ]});
