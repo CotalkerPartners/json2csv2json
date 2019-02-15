@@ -111,7 +111,7 @@ export class CSV2JSON extends Transform {
       }
       if (!this.headerList && _.isEmpty(this.schema) && !this.loadedHeaders) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
-        if (!this.columns) this.configColumns(this.headerList);
+        if (this.columns.length === 0) this.configColumns(this.headerList);
         this.schema = generateSchema(this.headerList);
         this.loadedHeaders = true;
         this.generateReadColumns(this.columns);

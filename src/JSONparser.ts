@@ -56,7 +56,7 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
     const nesting = tokenizeClassifier(pathHeader[i]);
     const nestingSize = nesting.modes.length;
     for (let j = 0; j < nestingSize; j += 1) {
-      if (path) {
+      if ((path !== null && (typeof path !== 'undefined'))) {
         if (nesting.modes[j] === 'Object' || nesting.modes[j] === 'Root') {
           path = path[nesting.tokens[j]];
         } else if (nesting.modes[j] === 'Array') {
@@ -66,12 +66,14 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
         if (config.errorOnNull) {
           throw `Error, null path on ${pathHeader[i]}`;
         } else {
-          row += `null${separator}`;
+          row += `${separator}`;
           break;
         }
       }
     }
-    if (path) row += String(path) + separator;
+    if ((path !== null && (typeof path !== 'undefined'))) {
+      row += String(path) + separator;
+    } else row += separator;
     path = obj;
   }
   // Remove last separator:

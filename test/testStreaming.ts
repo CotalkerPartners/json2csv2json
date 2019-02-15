@@ -3,13 +3,6 @@ const fs = require('fs');
 
 const pathCSV = './test/csvFile.csv';
 const c2j = new CSV2JSON(undefined, undefined);
-c2j.columns[0] = {
-  columnNum: 0,
-  read: true,
-  type: 'String',
-  objectPath: 'Personal{Name}',
-  headerName: 'Name',
-};
 let str = '';
 let i = 0;
 fs.createReadStream(pathCSV)

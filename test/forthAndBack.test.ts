@@ -31,8 +31,8 @@ const obj = {
     ],
   },
 };
-describe('--.csv-> CSV2JSON --object-> JSON2CSV --.csv->', () => {
-  it('Should return the same csv provided', () => {
+describe('--object-> JSON2CSV --.csv-> CSV2JSON --object->', () => {
+  it('Should return the same objects provided', () => {
     backAndForth((err, data) => {
       if (err) {
         return err;
