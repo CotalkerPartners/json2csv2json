@@ -1,6 +1,7 @@
 import { Transform } from 'stream';
 import { generateSchema } from './SchemaGenerator';
 import { csvDataToJSON } from './csvParser';
+
 const _ = require('lodash');
 interface IcolumnConfig {
   columnNum: number;
@@ -11,9 +12,10 @@ interface IcolumnConfig {
     'boolean' |
     'float' |
     'number' |
-    'date'); // Change afterwards to string literals ('string' | 'integer' | 'boolean' | 'date') etc
+    'date');
   headerName: string;
   objectPath: string;
+  dateFormat?: string;
 }
 
 interface IconfigObj {
@@ -32,6 +34,7 @@ export class CSV2JSON extends Transform {
   readColumns: object;
   loadedHeaders: boolean;
   parsedRows: number;
+  dateFormats: object;
   constructor(headersString: string, config: IconfigObj) {
     super({ writableObjectMode: true, objectMode: true });
     this.remainder = '';
@@ -41,6 +44,7 @@ export class CSV2JSON extends Transform {
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
     this.columns = (config && config.columns) || [];
+    this.dateFormats = {};
     if (this.columns.length > 0) {
       this.schema = generateSchema(this.columns.filter(column => column.read).map(column => column.objectPath));
     }
@@ -99,7 +103,7 @@ export class CSV2JSON extends Transform {
     return this.schema;
   }
 
-  typeParser(stringValue, typeval) {
+  typeParser(stringValue, typeval, headerName) {
     let val = null;
     switch (typeval) {
       case 'string':
@@ -113,6 +117,14 @@ export class CSV2JSON extends Transform {
         break;
       case 'float':
         val = parseFloat(stringValue);
+        break;
+      case 'date':
+        const moment = require('moment');
+        if (headerName) {
+          val = moment(stringValue, this.dateFormats[headerName]);
+        } else {
+          val = moment(stringValue); // Especificar fecha
+        }
         break;
       default:
         val = stringValue;
@@ -159,6 +171,7 @@ export class CSV2JSON extends Transform {
       const objectPaths = {};
       this.columns.forEach((column) => {
         if (column.read) objectPaths[column.objectPath] = column.type;
+        if (column.type === 'date') this.dateFormats[column.headerName] = column.dateFormat;
       });
       if (_.isEmpty(this.readColumns)) {
         this.readColumns = {};
@@ -174,7 +187,7 @@ export class CSV2JSON extends Transform {
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
             typeval = objectPaths[this.readColumns[this.headerList[i]]];
-            objectPaths[this.readColumns[this.headerList[i]]] = this.typeParser(values[i], typeval);
+            objectPaths[this.readColumns[this.headerList[i]]] = this.typeParser(values[i], typeval, this.headerList[i]);
           }
         }
         const obj = csvDataToJSON(this.schema, objectPaths);

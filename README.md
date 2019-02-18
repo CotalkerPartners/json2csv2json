@@ -53,7 +53,7 @@ Headers (or user) generate an internal configuration in the c2j object, which is
 This object has the following attributes:
   * columnNum: This is not implemented in this class, but it represents the order of the columns in the csv, it's used in the JSON2CSV mode.
   * read: A boolean that if true the column will be read and if false it'll be ignored by the parser, alternatetively you can ignore a set of values in a column if you don't provide their column config object, and just provide the ones that you want to read, given that this value is true in those provided.
-  * type: Represents the data type that the row value will be parsed when mapped to an object (not implemented).
+  * type: Represents the data type that the row value will be parsed when mapped to an object (for now only implemented for 'boolean', 'float', 'string', 'integer' and 'number').
   * headerName: The header name in the provided .csv. It's of utmost importance that this parameter is provided correctly because the mapping in the .csv is made searching for the column marked by this value.
   * objectPath: A string representing the path the value in the column will take once mapped into the object. By default objectPath is equal to headerName but you can edit this changing it in this config. Examples:
     * If you'd like to represent the path of 'Value' (nested in another object) in the object { Attribute: { Subattribute: Value } }, the path is described by the string 'Attribute{Subattribute}'.
@@ -72,28 +72,28 @@ c2j.getConfig();
   hasHeader: true,
   rows: [
     {
-      rowID: 0,
+      columnNum: 0,
       read: true,
       type: 'String',
       headerName: 'Name',
       objectPath: 'Name'
     },
     {
-      rowID: 1,
+      columnNum: 1,
       read: true,
       type: 'String',
       headerName: 'lastName',
       objectPath: 'lastName'
     },
     {
-      rowID: 2,
+      columnNum: 2,
       read: true,
       type: 'String',
       headerName: 'Active',
       objectPath: 'Active'
     },
     {
-      rowID: 3,
+      columnNum: 3,
       read: true,
       type: 'String',
       headerName: 'Charge',
@@ -130,28 +130,28 @@ c2j.printConfig();
   header: true,
   rows: [
     {
-      rowID: 0,
+      columnNum: 0,
       read: true,
       type: 'String',
       headerName: 'Name',
       objectPath: 'Name{First}'
     },
     {
-      rowID: 1,
+      columnNum: 1,
       read: true,
       type: 'String',
       headerName: 'lastName',
       objectPath: 'Name{Last}'
     },
     {
-      rowID: 2,
+      columnNum: 2,
       read: true,
       type: 'Boolean',
       headerName: 'Active',
       objectPath: 'Active'
     },
     {
-      rowID: 3,
+      columnNum: 3,
       read: true,
       type: 'String',
       headerName: 'Charge',
@@ -191,7 +191,7 @@ Reprocess the JSON output structure like this:
 ```javascript
   const c2j = CSV2JSON();
   c2j.rows.push({
-      rowID: 0,
+      columnNum: 0,
       read: true,
       type: 'String',
       headerName: 'Name',
@@ -203,28 +203,28 @@ Or you can input your configurations if you have them in a JSON file with parse 
 ```javascript
   const c2j = CSV2JSON(config = {rows:[
     {
-      rowID: 0,
+      columnNum: 0,
       read: true,
       type: 'String',
       headerName: 'Name',
       objectPath: 'Name{First}'
     },
     {
-      rowID: 1,
+      columnNum: 1,
       read: true,
       type: 'String',
       headerName: 'lastName',
       objectPath: 'Name{Last}'
     },
     {
-      rowID: 2,
+      columnNum: 2,
       read: true,
       type: 'Boolean',
       headerName: 'Active',
       objectPath: 'Active'
     },
     {
-      rowID: 3,
+      columnNum: 3,
       read: true,
       type: 'String',
       headerName: 'Charge',
@@ -286,7 +286,11 @@ fs.createReadstream(csvPath)
 
 ```
 
- # Usage json2csv
+# Configuration JSON2CSV
+
+
+
+# Usage json2csv
  
  ```javascript
 const jsonPath = 'path/to/file' 
