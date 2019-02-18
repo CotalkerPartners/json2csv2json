@@ -179,7 +179,7 @@ export class CSV2JSON extends Transform {
       }
       let typeval = '';
       dataLines.forEach((row) => {
-        const values = row.split(this.separator);
+        const values = row.split(this.separator).map(h => h.trim());
         const totalColumns = values.length;
         if (totalColumns !== this.headerList.length) {
           throw `Row ${this.parsedRows} with different number of values than header\n${row}\n`;

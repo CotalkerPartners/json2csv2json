@@ -1,5 +1,5 @@
 ## json2csv2json
-Convert to and from object and csv. This is made using the Node.js Transform stream class.
+Convert to and from object and csv. This is made using the Node.js Transform stream class. Also uses a special syntax that provides object nesting.
 
 # Example
 In the simplest form, the first row of a .csv like this:
@@ -49,7 +49,7 @@ it maps to (or in) an object like this:
 
 # Configuration CSV2JSON
 
-Headers (or user) generate an internal configuration in the c2j object, which is represented by an object with the attributes of the separator of the .csv (by default is ','), a boolean describing if the file or stream provided has a header row in the first row and an array of objects, each of one representing a specific column of the .csv provided.
+Headers (or user) generate an internal configuration in the c2j object, which is represented by an object with the attributes of the separator of the .csv (by default is ','), a boolean describing if the file or stream provided has a header row in the first row and an array of objects, each of one representing a specific column of the .csv provided. You can also provide your own configuration object when declaring an instance of the CSV2JSON class.
 This object has the following attributes:
   * columnNum: This is not implemented in this class, but it represents the order of the columns in the csv, it's used in the JSON2CSV mode.
   * read: A boolean that if true the column will be read and if false it'll be ignored by the parser, alternatetively you can ignore a set of values in a column if you don't provide their column config object, and just provide the ones that you want to read, given that this value is true in those provided.
@@ -65,6 +65,7 @@ Let's say our csv looks like this. If we provide the headers, the config it's au
 
 Also you can obtain the config object using the following command:
  ```javascript
+const c2j = new CSV2JSON('Name,lastName,Active,Charge');
 c2j.getConfig();
 /*
 { 
@@ -122,7 +123,7 @@ c2j.rows[0].objectPath = 'Name{First}';
 c2j.rows[1].objectPath = 'Name{Last}';
 c2j.rows[2].type = 'Boolean';
 
-c2j.printConfig();
+console.log(c2j.getConfig());
 
 /*
 { 
@@ -179,7 +180,7 @@ Reprocess the JSON output structure like this:
  #**Important: for now you MUST provide in some manner the complete header row regardless if your file has headers or not, if not provided the first row will be utilized as header values to initialize the config**.
 
  ```javascript
- const CSV2JSON = require('j2c2j').CSV2JSON;
+ const CSV2JSON = require('json2csv2json').CSV2JSON;
  const fs = require('fs')
  
  const csvPath = 'path/to/csvFile.csv'
@@ -256,7 +257,7 @@ Once you are sure about that previous step you can start piping the input stream
 fs.createReadstream(csvPath)
 .pipe(c2j())
 .on('data', (data) => {
-  console.log(data);
+  console.log(JSON.stringify(data, null, 2));
 })
 .on('error', (err) => {
   console.log(err);
@@ -287,6 +288,7 @@ fs.createReadstream(csvPath)
 ```
 
 # Configuration JSON2CSV
+
 
 
 
