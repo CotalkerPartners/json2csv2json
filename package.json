@@ -7,28 +7,25 @@
     "type": "git",
     "url": "git+https://github.com/Moblox/json2csv2json.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["csv", "streaming", "nesting", "object-parser", "csv-parser"],
+  "author": "Eduardo Soto",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Moblox/json2csv2json/issues"
   },
   "homepage": "https://github.com/Moblox/json2csv2json#readme",
   "dependencies": {
-    "@types/lodash": "^4.14.120",
-    "@types/node": "^10.12.18",
-    "csvtojson": "^2.0.8",
-    "firstline": "^2.0.2",
-    "generate-schema": "^2.6.0",
     "lodash": "^4.17.11",
-    "papaparse": "^4.6.3"
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "@angular/compiler": "^7.2.1",
     "@angular/core": "^7.2.1",
     "@types/chai": "^4.1.7",
+    "@types/lodash": "^4.14.120",
     "@types/mocha": "^5.2.5",
-    "@types/papaparse": "^4.5.7",
+    "@types/moment": "^2.13.0",
+    "@types/node": "^11.9.3",
     "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
     "codelyzer": "^4.5.0",
@@ -40,6 +37,7 @@
     "tslint-config-airbnb": "^5.11.1"
   },
   "scripts": {
+    "build": "tsc",
     "test": "mocha --reporter spec --compilers ts:ts-node/register test/**/*.test.ts"
   }
 }

@@ -1,5 +1,4 @@
 import { CSV2JSON } from '../src/CSV2JSON';
-import { strictEqual } from 'assert';
 const fs = require('fs');
 
 const pathCSV = './test/csvFile.csv';
@@ -11,7 +10,8 @@ fs.createReadStream(pathCSV)
 .on('data', (data) => {
   str = JSON.stringify(data, null, 2);
   i += 1;
-  if (i % 10000 === 0) {
+  if (i % 100000 === 0) {
+    console.log(i);
     console.log(str);
   }
 })
@@ -19,6 +19,6 @@ fs.createReadStream(pathCSV)
   console.log(err);
 })
 .on('end', () => {
-  console.log('END');
   console.log(str);
+  console.log('end');
 });

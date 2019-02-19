@@ -1,13 +1,21 @@
 import { Transform } from 'stream';
 import { generateSchema } from './SchemaGenerator';
 import { csvDataToJSON } from './csvParser';
+
 const _ = require('lodash');
 interface IcolumnConfig {
   columnNum: number;
   read: boolean;
-  type: string; // Change afterwards to string literals ('String' |'Integer' | 'Boolean' | 'Date') etc
+  type: (
+    'string' |
+    'integer' |
+    'boolean' |
+    'float' |
+    'number' |
+    'date');
   headerName: string;
   objectPath: string;
+  dateFormat?: string;
 }
 
 interface IconfigObj {
@@ -26,6 +34,7 @@ export class CSV2JSON extends Transform {
   readColumns: object;
   loadedHeaders: boolean;
   parsedRows: number;
+  dateFormats: object;
   constructor(headersString: string, config: IconfigObj) {
     super({ writableObjectMode: true, objectMode: true });
     this.remainder = '';
@@ -35,6 +44,7 @@ export class CSV2JSON extends Transform {
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
     this.columns = (config && config.columns) || [];
+    this.dateFormats = {};
     if (this.columns.length > 0) {
       this.schema = generateSchema(this.columns.filter(column => column.read).map(column => column.objectPath));
     }
@@ -48,13 +58,13 @@ export class CSV2JSON extends Transform {
     if (this.loadedHeaders) {
       if (this.columns.length === 0) {
         this.configColumns(this.headerList);
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
         if (_.isEmpty(this.schema)) this.schema = generateSchema(this.headerList);
       }
     }
   }
 
-  generateReadColumns(columns) {
+  generateReadColumns() {
     this.columns.forEach((column) => {
       if (column.read) {
         this.readColumns[column.headerName] = column.objectPath;
@@ -78,7 +88,7 @@ export class CSV2JSON extends Transform {
       const columnObj: IcolumnConfig = {
         columnNum: i,
         read: true,
-        type: 'String',
+        type: 'string',
         headerName: headerElement,
         objectPath: headerElement,
       };
@@ -93,8 +103,48 @@ export class CSV2JSON extends Transform {
     return this.schema;
   }
 
+  typeParser(stringValue, typeval, headerName) {
+    let val = null;
+    switch (typeval) {
+      case 'string':
+        val = stringValue;
+        break;
+      case 'boolean':
+        val = (stringValue === 'true' || stringValue === 'True');
+        break;
+      case 'integer':
+        val = parseInt(stringValue, 10);
+        break;
+      case 'float':
+        val = parseFloat(stringValue);
+        break;
+      case 'date':
+        const moment = require('moment');
+        if (headerName) {
+          val = moment(stringValue, this.dateFormats[headerName]);
+        } else {
+          val = moment(stringValue); // Especificar fecha
+        }
+        break;
+      default:
+        val = stringValue;
+    }
+    return val;
+  }
+
+  passConfig(config: IconfigObj) {
+    this.separator = (config && config.separator) || ',';
+    this.hasHeader = (config && config.hasHeader) || true;
+    this.columns = (config && config.columns) || [];
+  }
+
   // tslint:disable-next-line
   _transform(data: Buffer, encoding, callback) {
+    if (_.isEmpty(this.schema) && this.columns.length > 0) {
+      this.schema =  generateSchema(this.columns.map((col) => {
+        return col.objectPath;
+      }));
+    }
     const dataLines = data.toString().split(/\r\n|\r|\n/).filter(line => line !== '');
     if (dataLines && !data.toString().match(/\r\n|\r|\n/)) {
       this.remainder += dataLines.pop();
@@ -106,10 +156,10 @@ export class CSV2JSON extends Transform {
       }
       if (!this.headerList && _.isEmpty(this.schema) && !this.loadedHeaders) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
-        this.configColumns(this.headerList);
+        if (this.columns.length === 0) this.configColumns(this.headerList);
         this.schema = generateSchema(this.headerList);
         this.loadedHeaders = true;
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
         this.parsedRows += 1;
       }
       const lastChar = data.slice(data.length - 1, data.length).toString();
@@ -121,24 +171,30 @@ export class CSV2JSON extends Transform {
       if (!this.loadedHeaders && this.hasHeader) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
         this.loadedHeaders = true;
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
       } else if (this.hasHeader && this.parsedRows === 0) {
         dataLines.shift();
       }
       const objectPaths = {};
       this.columns.forEach((column) => {
-        if (column.read) objectPaths[column.objectPath] = '';
+        if (column.read) objectPaths[column.objectPath] = column.type;
+        if (column.type === 'date') this.dateFormats[column.headerName] = column.dateFormat;
       });
+      if (_.isEmpty(this.readColumns)) {
+        this.readColumns = {};
+        this.generateReadColumns();
+      }
+      let typeval = '';
       dataLines.forEach((row) => {
-        const values = row.split(this.separator);
+        const values = row.split(this.separator).map(h => h.trim());
         const totalColumns = values.length;
-        if (_.isEmpty(this.readColumns)) {
-          this.readColumns = {};
-          this.generateReadColumns(this.columns);
+        if (totalColumns !== this.headerList.length) {
+          throw `Row ${this.parsedRows} with different number of values than header\n${row}\n`;
         }
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
-            objectPaths[this.readColumns[this.headerList[i]]] = values[i];
+            typeval = objectPaths[this.readColumns[this.headerList[i]]];
+            objectPaths[this.readColumns[this.headerList[i]]] = this.typeParser(values[i], typeval, this.headerList[i]);
           }
         }
         const obj = csvDataToJSON(this.schema, objectPaths);
