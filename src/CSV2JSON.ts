@@ -58,13 +58,13 @@ export class CSV2JSON extends Transform {
     if (this.loadedHeaders) {
       if (this.columns.length === 0) {
         this.configColumns(this.headerList);
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
         if (_.isEmpty(this.schema)) this.schema = generateSchema(this.headerList);
       }
     }
   }
 
-  generateReadColumns(columns) {
+  generateReadColumns() {
     this.columns.forEach((column) => {
       if (column.read) {
         this.readColumns[column.headerName] = column.objectPath;
@@ -131,6 +131,13 @@ export class CSV2JSON extends Transform {
     }
     return val;
   }
+
+  passConfig(config: IconfigObj) {
+    this.separator = (config && config.separator) || ',';
+    this.hasHeader = (config && config.hasHeader) || true;
+    this.columns = (config && config.columns) || [];
+  }
+
   // tslint:disable-next-line
   _transform(data: Buffer, encoding, callback) {
     if (_.isEmpty(this.schema) && this.columns.length > 0) {
@@ -152,7 +159,7 @@ export class CSV2JSON extends Transform {
         if (this.columns.length === 0) this.configColumns(this.headerList);
         this.schema = generateSchema(this.headerList);
         this.loadedHeaders = true;
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
         this.parsedRows += 1;
       }
       const lastChar = data.slice(data.length - 1, data.length).toString();
@@ -164,7 +171,7 @@ export class CSV2JSON extends Transform {
       if (!this.loadedHeaders && this.hasHeader) {
         this.headerList = dataLines.shift().split(this.separator).map(h => h.trim());
         this.loadedHeaders = true;
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
       } else if (this.hasHeader && this.parsedRows === 0) {
         dataLines.shift();
       }
@@ -175,7 +182,7 @@ export class CSV2JSON extends Transform {
       });
       if (_.isEmpty(this.readColumns)) {
         this.readColumns = {};
-        this.generateReadColumns(this.columns);
+        this.generateReadColumns();
       }
       let typeval = '';
       dataLines.forEach((row) => {

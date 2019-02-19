@@ -72,6 +72,13 @@ export class JSON2CSV extends Transform {
     };
     return config;
   }
+
+  passConfig(config: IconfigObj) {
+    this.separator = (config && config.separator) || ',';
+    this.hasHeader = (config && config.hasHeader) || true;
+    this.columns = (config && config.columns) || [];
+  }
+
   // tslint:disable-next-line
   _transform(chunk, enc, callback) {
     let row = '';

@@ -289,7 +289,79 @@ fs.createReadstream(csvPath)
 
 # Configuration JSON2CSV
 
+The configuration depends on the way the JSON2CSV class is constructed.
 
+```javascript
+
+const JSON2CSV = require('json2csv2json').JSON2CSV;
+const j2c = new JSON2CSV(objectSchema, configObj)
+```
+
+This class receives an stream of objects which can have multiple forms and attributes. That's why it needs a reference object for it to create a config object and know in advance how many columns the csv output will have. You can pass it any object as a schema and the library will treat the following collection of objects as that first reference. If you don't pass an object sample in the constructor, the JSON2CSV object will read the first object passed to it in the stream and will take it as a reference.
+
+Passing an object schema to the constructor is recommended in the case that the first object that will be passed in the stream is not representative of the collection, also, passing it in the constructor without a config object will generate a default configuration inside the j2c object. You can obtain the config object by calling:
+
+```javascript
+const objectSchema = {
+  Name: {
+    First: 'Value',
+    Last: 'Value'
+  }
+  Active: true,
+  Charge: 'Value'
+};
+const j2c = new JSON2CSV(objectSchema);
+let confg = j2c.getConfigk();
+console.log(JSON.stringify(confg, null, 2));
+/*
+{
+  hasHeader: true,
+  separator: ',',
+  errorOnNull: false,
+  columns: [
+    {
+      columnNum: 0,
+      read: true,
+      type: 'String',
+      headerName: 'Name{First}',
+      objectPath: 'Name{First}'
+    },
+    {
+      columnNum: 1,
+      read: true,
+      type: 'String',
+      headerName: 'Name{Last}',
+      objectPath: 'Name{Last}'
+    },
+    {
+      columnNum: 2,
+      read: true,
+      type: 'Boolean',
+      headerName: 'Active',
+      objectPath: 'Active'
+    },
+    {
+      columnNum: 3,
+      read: true,
+      type: 'String',
+      headerName: 'Charge',
+      objectPath: 'Charge'
+    }
+  ]
+}
+*/
+```
+The description of the configuration elements is the following:
+
+  * hasHeader: A boolean describing if the generated .csv will have a header row.
+  * separator: the char or string that will be used to separate the values of the same row, by default is the comma (',') 
+  * errorOnNull: If true, when a value present in the reference object (passed in the constructor or the first object in the stream) is null in a following object in the stream, then it will throw an error. By default is false, and it'll be a null value in the .csv.
+  * columns: An array of column objects that describe each column of the csv geenerated and have the following properties:
+    * columnNum: Describes the order of the columns from left to right in the gerenerated .csv, it will be applied by sorting the elements.
+    * read: A boolean that tells the parser if it reads or ignores that value, and therefore, the column will be generated or not. If you wish to ignore a value, you can also delete the  respective column object and that value will be ignored.
+    * type: The type of the values in the object. All will be parsed to string to the csv so in this sense it's not implemented in this way (See CSV2JSON).
+    * headerName: The name that the column generated will have as a header, by default is the same as thye objectPath.
+    * objectPath: A string describing with a special syntax (see CSV2JSON) the nesting of the value in the object. **Don't modify this**, otherwise, that value won't be read.
 
 
 # Usage json2csv
@@ -297,7 +369,7 @@ fs.createReadstream(csvPath)
  ```javascript
 const jsonPath = 'path/to/file' 
 
-const CSVtoJSON = require('j2c2j').JSONtoCSV
+const CSVtoJSON = require('j2c2j').JSON2CSV
 
 const j2c = JSONtoCSV();
 
