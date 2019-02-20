@@ -370,3 +370,17 @@ passConfig(confg);
 
 # Usage json2csv
  
+If you are satisfied with the configuration you can pipe to the j2c object from an object read Stream.
+```javascript
+const fs = require('fs');
+const Stream = require('stream');
+const readable = new Stream.Readable({objectMode: true})
+
+readable.pipe(j2c)
+.on('data', data => console.log(data));
+
+for (let fileNum = 0; fileNum < 100; fileNum++) {
+  readable.push(require(`document${fileNum}.json`));
+}
+```
+A good way of generating object streams from mongoDB is using the mongoose cursor() [Cursor](https://mongoosejs.com/docs/api.html#query_Query-cursor) 
