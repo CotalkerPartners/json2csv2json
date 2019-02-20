@@ -1,0 +1,17 @@
+
+channels\.csv
+
+\.vscode/launch\.json
+
+\node_modules\**\
+node_modules/
+
+\.eslintrc
+
+test/specific/
+
+test/csvFile_large\.csv
+
+test/jsonMaker\.js
+
+test/channelsFile\.json
