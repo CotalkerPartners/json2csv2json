@@ -7,8 +7,19 @@
         "module": "commonjs",
         "sourceMap": true
     },
+    "files": [
+        "./test/SchemaGenerator.test.ts",
+        "./test/streamHeaderConfig.test.ts",
+        "./test/streamHeaderInput.test.ts",
+        "./test/testStreaming.ts",
+        "./test/nestingTokenize.test.ts",
+        "./test/objectParser.test.ts",
+        "./test/testJSONstreaming.ts",
+        "./test/streamJSON.test.ts",
+        "./test/backAndForth.test.ts",
+        "./test/forthAndBack.test.ts",
+    ],
     "include": [
         "./src/**/*",
-        "./node_modules/@types/node/index.d.ts"
     ]
 }

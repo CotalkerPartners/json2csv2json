@@ -5,10 +5,10 @@ function objCopy(obj: object): object {
 }
 
 export function csvDataToJSON(schema: object, rowData: object) {
-  const rowNames: string[] = Object.keys(rowData);
+  const rowPaths: string[] = Object.keys(rowData);
   const rowObj = objCopy(schema);
-  rowNames.forEach((rowName) => {
-    const nestingMap: INestingMap = tokenizeClassifier(rowName);
+  rowPaths.forEach((rowPath) => {
+    const nestingMap: INestingMap = tokenizeClassifier(rowPath);
     let path = rowObj[nestingMap.tokens[0]];
     const nestingSize: number = nestingMap.modes.length;
     for (let i = 1; i < nestingSize - 1; i += 1) { // Last element of nesting corresponds to the data path
@@ -18,12 +18,12 @@ export function csvDataToJSON(schema: object, rowData: object) {
         path = path[parseInt(nestingMap.tokens[i], 10)];
       }
     }
-    if (nestingMap.modes[nestingMap.modes[nestingSize - 1]] === 'Object' && nestingSize > 1) {
-      path[nestingMap.tokens[nestingSize - 1]] = rowData[rowName];
+    if (nestingMap.modes[nestingSize - 1] === 'Object' && nestingSize > 1) {
+      path[nestingMap.tokens[nestingSize - 1]] = rowData[rowPath];
     } else if (nestingMap.modes[nestingSize - 1] === 'Array' && nestingSize > 1) {
-      path[parseInt(nestingMap.tokens[nestingSize - 1], 10)] = rowData[rowName];
+      path[parseInt(nestingMap.tokens[nestingSize - 1], 10)] = rowData[rowPath];
     } else if (nestingSize === 1) {
-      rowObj[nestingMap.tokens[0]] = rowData[rowName];
+      rowObj[nestingMap.tokens[0]] = rowData[rowPath];
     }
   });
   return rowObj;
