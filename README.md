@@ -383,4 +383,4 @@ for (let fileNum = 0; fileNum < 100; fileNum++) {
   readable.push(require(`document${fileNum}.json`));
 }
 ```
-A good way of generating object streams from mongoDB is using the mongoose cursor() [Cursor](https://mongoosejs.com/docs/api.html#query_Query-cursor) 
+A good way of generating object streams from mongoDB is using the mongoose [Cursor](https://mongoosejs.com/docs/api.html#query_Query-cursor).

@@ -50,6 +50,11 @@ class JSON2CSV extends stream_1.Transform {
         };
         return config;
     }
+    passConfig(config) {
+        this.separator = (config && config.separator) || ',';
+        this.hasHeader = (config && config.hasHeader) || true;
+        this.columns = (config && config.columns) || [];
+    }
     // tslint:disable-next-line
     _transform(chunk, enc, callback) {
         let row = '';

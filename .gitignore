@@ -15,3 +15,5 @@ test/csvFile_large\.csv
 test/jsonMaker\.js
 
 test/channelsFile\.json
+built/src/CSV2JSON.js.map
+*.map

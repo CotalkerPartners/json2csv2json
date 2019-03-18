@@ -74,7 +74,8 @@ function objectParser(obj, pathHeader, config) {
             }
         }
         if ((path !== null && (typeof path !== 'undefined'))) {
-            row += String(path) + separator;
+            // this line can cause problems assign after a configuration for separator-in-value replacing
+            row += String(path).replace(separator, '') + separator;
         }
         else
             row += separator;
