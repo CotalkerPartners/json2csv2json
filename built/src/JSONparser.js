@@ -77,8 +77,6 @@ function objectParser(obj, pathHeader, config) {
             // this line can cause problems assign after a configuration for separator-in-value replacing
             row += String(path).replace(separator, '') + separator;
         }
-        else
-            row += separator;
         path = obj;
     }
     // Remove last separator:
