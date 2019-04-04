@@ -15,6 +15,7 @@ interface IconfigObj {
   hasHeader?: boolean;
   columns?: IcolumnConfig[];
   errorOnNull?: boolean;
+  bufferNum?: number;
 }
 
 export class JSON2CSV extends Transform {
@@ -26,6 +27,8 @@ export class JSON2CSV extends Transform {
   hasHeader: boolean;
   errorOnNull: boolean;
   passedHeader: boolean;
+  lineBufferNum: number;
+  lineBuffer = [];
   constructor(objectSchema: object, config: IconfigObj) {
     super({ objectMode: true });
     this.pathListLoaded = false;
@@ -33,7 +36,9 @@ export class JSON2CSV extends Transform {
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
     this.errorOnNull = (config && config.errorOnNull) || false;
+    this.lineBufferNum = (config && config.bufferNum) || 1;
     this.objectSchema = objectSchema || {};
+    this.lineBuffer = [];
     if (config) {
       this.columns = config.columns.sort((a, b) => {
         return a.columnNum - b.columnNum;
@@ -107,7 +112,22 @@ export class JSON2CSV extends Transform {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
       });
-      this.push(row);
+      if (this.lineBuffer.length >= this.lineBufferNum) {
+        for (let i = 0; i < this.lineBuffer.length; i += 1) {
+          this.push(this.lineBuffer[i]);
+        }
+        this.lineBuffer = [];
+      } else this.lineBuffer.push(row);
+    }
+    callback();
+  }
+
+  _final(callback) {
+    const lineBufferLength = this.lineBuffer.length;
+    if (lineBufferLength > 0) {
+      for (let i = 0; i < lineBufferLength; i += 1) {
+        this.push(this.lineBuffer[i]);
+      }
     }
     callback();
   }

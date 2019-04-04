@@ -6,12 +6,15 @@ const _ = require('lodash');
 class JSON2CSV extends stream_1.Transform {
     constructor(objectSchema, config) {
         super({ objectMode: true });
+        this.lineBuffer = [];
         this.pathListLoaded = false;
         this.passedHeader = false;
         this.separator = (config && config.separator) || ',';
         this.hasHeader = (config && config.hasHeader) || true;
         this.errorOnNull = (config && config.errorOnNull) || false;
+        this.lineBufferNum = (config && config.bufferNum) || 1;
         this.objectSchema = objectSchema || {};
+        this.lineBuffer = [];
         if (config) {
             this.columns = config.columns.sort((a, b) => {
                 return a.columnNum - b.columnNum;
@@ -84,7 +87,23 @@ class JSON2CSV extends stream_1.Transform {
                 errorOnNull: this.errorOnNull,
                 separator: this.separator,
             });
-            this.push(row);
+            if (this.lineBuffer.length >= this.lineBufferNum) {
+                for (let i = 0; i < this.lineBuffer.length; i += 1) {
+                    this.push(this.lineBuffer[i]);
+                }
+                this.lineBuffer = [];
+            }
+            else
+                this.lineBuffer.push(row);
+        }
+        callback();
+    }
+    _final(callback) {
+        const lineBufferLength = this.lineBuffer.length;
+        if (lineBufferLength > 0) {
+            for (let i = 0; i < lineBufferLength; i += 1) {
+                this.push(this.lineBuffer[i]);
+            }
         }
         callback();
     }
