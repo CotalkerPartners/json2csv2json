@@ -112,12 +112,14 @@ export class JSON2CSV extends Transform {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
       });
-      if (this.lineBuffer.length >= this.lineBufferNum) {
-        for (let i = 0; i < this.lineBuffer.length; i += 1) {
+      this.lineBuffer.push(row);
+      const lineBufferSize = this.lineBuffer.length;
+      if (lineBufferSize >= this.lineBufferNum) {
+        for (let i = 0; i < lineBufferSize; i += 1) {
           this.push(this.lineBuffer[i]);
         }
         this.lineBuffer = [];
-      } else this.lineBuffer.push(row);
+      }
     }
     callback();
   }
