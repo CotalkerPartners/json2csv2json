@@ -18,6 +18,10 @@ interface IconfigObj {
   bufferNum?: number;
 }
 
+interface ILineBuffer {
+  length: number;
+  string: string;
+}
 export class JSON2CSV extends Transform {
   objectSchema: object;
   columns: IcolumnConfig[];
@@ -28,7 +32,7 @@ export class JSON2CSV extends Transform {
   errorOnNull: boolean;
   passedHeader: boolean;
   lineBufferNum: number;
-  lineBuffer = [];
+  lineBuffer: ILineBuffer;
   constructor(objectSchema: object, config: IconfigObj) {
     super({ objectMode: true });
     this.pathListLoaded = false;
@@ -38,7 +42,7 @@ export class JSON2CSV extends Transform {
     this.errorOnNull = (config && config.errorOnNull) || false;
     this.lineBufferNum = (config && config.bufferNum) || 1;
     this.objectSchema = objectSchema || {};
-    this.lineBuffer = [];
+    this.lineBuffer = { length: 0, string: '' };
     if (config) {
       this.columns = config.columns.sort((a, b) => {
         return a.columnNum - b.columnNum;
@@ -84,7 +88,7 @@ export class JSON2CSV extends Transform {
     this.columns = (config && config.columns) || [];
   }
 
-  // tslint:disable-next-line
+// tslint:disable-next-line: function-name
   _transform(chunk, enc, callback) {
     let row = '';
     if (!this.pathListLoaded) {
@@ -112,24 +116,25 @@ export class JSON2CSV extends Transform {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
       });
-      this.lineBuffer.push(row);
+      this.lineBuffer.string  += row;
+      this.lineBuffer.length += 1;
       const lineBufferSize = this.lineBuffer.length;
       if (lineBufferSize >= this.lineBufferNum) {
-        for (let i = 0; i < lineBufferSize; i += 1) {
-          this.push(this.lineBuffer[i]);
-        }
-        this.lineBuffer = [];
+        this.push(this.lineBuffer.string);
+        this.lineBuffer.string = '';
+        this.lineBuffer.length = 0;
       }
     }
     callback();
   }
 
+// tslint:disable-next-line: function-name
   _final(callback) {
     const lineBufferLength = this.lineBuffer.length;
     if (lineBufferLength > 0) {
-      for (let i = 0; i < lineBufferLength; i += 1) {
-        this.push(this.lineBuffer[i]);
-      }
+      this.push(this.lineBuffer.string);
+      this.lineBuffer.string = '';
+      this.lineBuffer.length = 0;
     }
     callback();
   }

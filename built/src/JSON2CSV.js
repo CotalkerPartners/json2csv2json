@@ -6,7 +6,6 @@ const _ = require('lodash');
 class JSON2CSV extends stream_1.Transform {
     constructor(objectSchema, config) {
         super({ objectMode: true });
-        this.lineBuffer = [];
         this.pathListLoaded = false;
         this.passedHeader = false;
         this.separator = (config && config.separator) || ',';
@@ -14,7 +13,7 @@ class JSON2CSV extends stream_1.Transform {
         this.errorOnNull = (config && config.errorOnNull) || false;
         this.lineBufferNum = (config && config.bufferNum) || 1;
         this.objectSchema = objectSchema || {};
-        this.lineBuffer = [];
+        this.lineBuffer = { length: 0, string: '' };
         if (config) {
             this.columns = config.columns.sort((a, b) => {
                 return a.columnNum - b.columnNum;
@@ -58,7 +57,7 @@ class JSON2CSV extends stream_1.Transform {
         this.hasHeader = (config && config.hasHeader) || true;
         this.columns = (config && config.columns) || [];
     }
-    // tslint:disable-next-line
+    // tslint:disable-next-line: function-name
     _transform(chunk, enc, callback) {
         let row = '';
         if (!this.pathListLoaded) {
@@ -87,23 +86,24 @@ class JSON2CSV extends stream_1.Transform {
                 errorOnNull: this.errorOnNull,
                 separator: this.separator,
             });
-            this.lineBuffer.push(row);
+            this.lineBuffer.string += row;
+            this.lineBuffer.length += 1;
             const lineBufferSize = this.lineBuffer.length;
             if (lineBufferSize >= this.lineBufferNum) {
-                for (let i = 0; i < lineBufferSize; i += 1) {
-                    this.push(this.lineBuffer[i]);
-                }
-                this.lineBuffer = [];
+                this.push(this.lineBuffer.string);
+                this.lineBuffer.string = '';
+                this.lineBuffer.length = 0;
             }
         }
         callback();
     }
+    // tslint:disable-next-line: function-name
     _final(callback) {
         const lineBufferLength = this.lineBuffer.length;
         if (lineBufferLength > 0) {
-            for (let i = 0; i < lineBufferLength; i += 1) {
-                this.push(this.lineBuffer[i]);
-            }
+            this.push(this.lineBuffer.string);
+            this.lineBuffer.string = '';
+            this.lineBuffer.length = 0;
         }
         callback();
     }
