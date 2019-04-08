@@ -1,5 +1,6 @@
 import { Transform } from 'stream';
 import { nestingTokenize, objectParser } from './JSONparser';
+import { ExecOptionsWithStringEncoding } from 'child_process';
 const _ = require('lodash');
 
 interface IcolumnConfig {
@@ -32,7 +33,7 @@ export class JSON2CSV extends Transform {
   errorOnNull: boolean;
   passedHeader: boolean;
   lineBufferNum: number;
-  lineBuffer: ILineBuffer;
+  lineBuffer: string;
   constructor(objectSchema: object, config: IconfigObj) {
     super({ objectMode: true });
     this.pathListLoaded = false;
@@ -40,9 +41,9 @@ export class JSON2CSV extends Transform {
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
     this.errorOnNull = (config && config.errorOnNull) || false;
-    this.lineBufferNum = (config && config.bufferNum) || 1;
+    this.lineBufferNum = (config && config.bufferNum) || 100000;
     this.objectSchema = objectSchema || {};
-    this.lineBuffer = { length: 0, string: '' };
+    this.lineBuffer = '';
     if (config) {
       this.columns = config.columns.sort((a, b) => {
         return a.columnNum - b.columnNum;
@@ -116,13 +117,11 @@ export class JSON2CSV extends Transform {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
       });
-      this.lineBuffer.string  += row;
-      this.lineBuffer.length += 1;
+      this.lineBuffer  += row;
       const lineBufferSize = this.lineBuffer.length;
       if (lineBufferSize >= this.lineBufferNum) {
-        this.push(this.lineBuffer.string);
-        this.lineBuffer.string = '';
-        this.lineBuffer.length = 0;
+        this.push(this.lineBuffer);
+        this.lineBuffer = '';
       }
     }
     callback();
@@ -132,9 +131,8 @@ export class JSON2CSV extends Transform {
   _final(callback) {
     const lineBufferLength = this.lineBuffer.length;
     if (lineBufferLength > 0) {
-      this.push(this.lineBuffer.string);
-      this.lineBuffer.string = '';
-      this.lineBuffer.length = 0;
+      this.push(this.lineBuffer);
+      this.lineBuffer = '';
     }
     callback();
   }
