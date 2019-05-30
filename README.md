@@ -363,24 +363,24 @@ The description of the configuration elements is the following:
     * headerName: The name that the column generated will have as a header, by default is the same as thye objectPath.
     * objectPath: A string describing with a special syntax (see CSV2JSON) the nesting of the value in the object. **Don't modify this**, otherwise, that value won't be read.
 
+You can modify this object and then passed to the j2c object with the 'passConfig(confg)' method. You can parse a JSON object so you can save your own config in this manner.
+```javascript
+passConfig(confg);
+```
 
 # Usage json2csv
  
- ```javascript
-const jsonPath = 'path/to/file' 
-
-const CSVtoJSON = require('j2c2j').JSON2CSV
-
-const j2c = JSONtoCSV();
-
+If you are satisfied with the configuration you can pipe to the j2c object from an object read Stream.
+```javascript
 const fs = require('fs');
+const Stream = require('stream');
+const readable = new Stream.Readable({objectMode: true})
 
-fs.createReadStream(jsonPath)
-.pipe(j2c())
-.on('data', (data) => {
-  console.log(JSON.stringify(data, null, 2));
-})
-.on('error', (err) => {
-  console.log(err);
-});
+readable.pipe(j2c)
+.on('data', data => console.log(data));
+
+for (let fileNum = 0; fileNum < 100; fileNum++) {
+  readable.push(require(`document${fileNum}.json`));
+}
 ```
+A good way of generating object streams from mongoDB is using the mongoose [Cursor](https://mongoosejs.com/docs/api.html#query_Query-cursor).

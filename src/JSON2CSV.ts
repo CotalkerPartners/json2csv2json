@@ -1,5 +1,6 @@
 import { Transform } from 'stream';
 import { nestingTokenize, objectParser } from './JSONparser';
+import { ExecOptionsWithStringEncoding } from 'child_process';
 const _ = require('lodash');
 
 interface IcolumnConfig {
@@ -15,8 +16,13 @@ interface IconfigObj {
   hasHeader?: boolean;
   columns?: IcolumnConfig[];
   errorOnNull?: boolean;
+  bufferNum?: number;
 }
 
+interface ILineBuffer {
+  length: number;
+  string: string;
+}
 export class JSON2CSV extends Transform {
   objectSchema: object;
   columns: IcolumnConfig[];
@@ -26,6 +32,8 @@ export class JSON2CSV extends Transform {
   hasHeader: boolean;
   errorOnNull: boolean;
   passedHeader: boolean;
+  lineBufferNum: number;
+  lineBuffer: string;
   constructor(objectSchema: object, config: IconfigObj) {
     super({ objectMode: true });
     this.pathListLoaded = false;
@@ -33,7 +41,9 @@ export class JSON2CSV extends Transform {
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
     this.errorOnNull = (config && config.errorOnNull) || false;
+    this.lineBufferNum = (config && config.bufferNum) || 100000;
     this.objectSchema = objectSchema || {};
+    this.lineBuffer = '';
     if (config) {
       this.columns = config.columns.sort((a, b) => {
         return a.columnNum - b.columnNum;
@@ -79,7 +89,7 @@ export class JSON2CSV extends Transform {
     this.columns = (config && config.columns) || [];
   }
 
-  // tslint:disable-next-line
+// tslint:disable-next-line: function-name
   _transform(chunk, enc, callback) {
     let row = '';
     if (!this.pathListLoaded) {
@@ -107,7 +117,22 @@ export class JSON2CSV extends Transform {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
       });
-      this.push(row);
+      this.lineBuffer  += row;
+      const lineBufferSize = this.lineBuffer.length;
+      if (lineBufferSize >= this.lineBufferNum) {
+        this.push(this.lineBuffer);
+        this.lineBuffer = '';
+      }
+    }
+    callback();
+  }
+
+// tslint:disable-next-line: function-name
+  _final(callback) {
+    const lineBufferLength = this.lineBuffer.length;
+    if (lineBufferLength > 0) {
+      this.push(this.lineBuffer);
+      this.lineBuffer = '';
     }
     callback();
   }

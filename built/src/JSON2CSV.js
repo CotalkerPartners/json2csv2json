@@ -11,7 +11,9 @@ class JSON2CSV extends stream_1.Transform {
         this.separator = (config && config.separator) || ',';
         this.hasHeader = (config && config.hasHeader) || true;
         this.errorOnNull = (config && config.errorOnNull) || false;
+        this.lineBufferNum = (config && config.bufferNum) || 1;
         this.objectSchema = objectSchema || {};
+        this.lineBuffer = { length: 0, string: '' };
         if (config) {
             this.columns = config.columns.sort((a, b) => {
                 return a.columnNum - b.columnNum;
@@ -50,7 +52,12 @@ class JSON2CSV extends stream_1.Transform {
         };
         return config;
     }
-    // tslint:disable-next-line
+    passConfig(config) {
+        this.separator = (config && config.separator) || ',';
+        this.hasHeader = (config && config.hasHeader) || true;
+        this.columns = (config && config.columns) || [];
+    }
+    // tslint:disable-next-line: function-name
     _transform(chunk, enc, callback) {
         let row = '';
         if (!this.pathListLoaded) {
@@ -79,7 +86,24 @@ class JSON2CSV extends stream_1.Transform {
                 errorOnNull: this.errorOnNull,
                 separator: this.separator,
             });
-            this.push(row);
+            this.lineBuffer.string += row;
+            this.lineBuffer.length += 1;
+            const lineBufferSize = this.lineBuffer.length;
+            if (lineBufferSize >= this.lineBufferNum) {
+                this.push(this.lineBuffer.string);
+                this.lineBuffer.string = '';
+                this.lineBuffer.length = 0;
+            }
+        }
+        callback();
+    }
+    // tslint:disable-next-line: function-name
+    _final(callback) {
+        const lineBufferLength = this.lineBuffer.length;
+        if (lineBufferLength > 0) {
+            this.push(this.lineBuffer.string);
+            this.lineBuffer.string = '';
+            this.lineBuffer.length = 0;
         }
         callback();
     }

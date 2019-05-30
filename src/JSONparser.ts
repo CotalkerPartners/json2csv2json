@@ -66,14 +66,16 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
         if (config.errorOnNull) {
           throw `Error, null path on ${pathHeader[i]}`;
         } else {
-          row += `${separator}`;
           break;
         }
       }
     }
     if ((path !== null && (typeof path !== 'undefined'))) {
-      row += String(path) + separator;
-    } else row += separator;
+      // this line can cause problems assign after a configuration for separator-in-value replacing
+      row += String(path).replace(separator, '') + separator;
+    } else {
+      row += `${separator}`;
+    }
     path = obj;
   }
   // Remove last separator:

@@ -68,16 +68,17 @@ function objectParser(obj, pathHeader, config) {
                     throw `Error, null path on ${pathHeader[i]}`;
                 }
                 else {
-                    row += `${separator}`;
                     break;
                 }
             }
         }
         if ((path !== null && (typeof path !== 'undefined'))) {
-            row += String(path) + separator;
+            // this line can cause problems assign after a configuration for separator-in-value replacing
+            row += String(path).replace(separator, '') + separator;
         }
-        else
-            row += separator;
+        else {
+            row += `${separator}`;
+        }
         path = obj;
     }
     // Remove last separator:
