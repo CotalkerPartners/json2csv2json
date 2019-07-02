@@ -17,6 +17,7 @@ interface IconfigObj {
   columns?: IcolumnConfig[];
   errorOnNull?: boolean;
   bufferNum?: number;
+  envelopeFix?: boolean;
 }
 
 interface ILineBuffer {
@@ -30,6 +31,7 @@ export class JSON2CSV extends Transform {
   pathListLoaded: boolean;
   separator: string;
   hasHeader: boolean;
+  envelopeFix: boolean;
   errorOnNull: boolean;
   passedHeader: boolean;
   lineBufferNum: number;
@@ -40,6 +42,7 @@ export class JSON2CSV extends Transform {
     this.passedHeader = false;
     this.separator = (config && config.separator) || ',';
     this.hasHeader = (config && config.hasHeader) || true;
+    this.envelopeFix = (config && config.envelopeFix) || true;
     this.errorOnNull = (config && config.errorOnNull) || false;
     this.lineBufferNum = (config && config.bufferNum) || 100000;
     this.objectSchema = objectSchema || {};
@@ -103,6 +106,7 @@ export class JSON2CSV extends Transform {
       row += objectParser(chunk, this.pathList, {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
+        envelopeFix: this.envelopeFix,
       });
       this.push(row);
     } else {
@@ -116,6 +120,7 @@ export class JSON2CSV extends Transform {
       row += objectParser(chunk, this.pathList, {
         errorOnNull: this.errorOnNull,
         separator: this.separator,
+        envelopeFix: this.envelopeFix,
       });
       this.lineBuffer  += row;
       const lineBufferSize = this.lineBuffer.length;

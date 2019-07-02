@@ -10,10 +10,11 @@ class JSON2CSV extends stream_1.Transform {
         this.passedHeader = false;
         this.separator = (config && config.separator) || ',';
         this.hasHeader = (config && config.hasHeader) || true;
+        this.envelopeFix = (config && config.envelopeFix) || true;
         this.errorOnNull = (config && config.errorOnNull) || false;
-        this.lineBufferNum = (config && config.bufferNum) || 1;
+        this.lineBufferNum = (config && config.bufferNum) || 100000;
         this.objectSchema = objectSchema || {};
-        this.lineBuffer = { length: 0, string: '' };
+        this.lineBuffer = '';
         if (config) {
             this.columns = config.columns.sort((a, b) => {
                 return a.columnNum - b.columnNum;
@@ -71,6 +72,7 @@ class JSON2CSV extends stream_1.Transform {
             row += JSONparser_1.objectParser(chunk, this.pathList, {
                 errorOnNull: this.errorOnNull,
                 separator: this.separator,
+                envelopeFix: this.envelopeFix,
             });
             this.push(row);
         }
@@ -85,14 +87,13 @@ class JSON2CSV extends stream_1.Transform {
             row += JSONparser_1.objectParser(chunk, this.pathList, {
                 errorOnNull: this.errorOnNull,
                 separator: this.separator,
+                envelopeFix: this.envelopeFix,
             });
-            this.lineBuffer.string += row;
-            this.lineBuffer.length += 1;
+            this.lineBuffer += row;
             const lineBufferSize = this.lineBuffer.length;
             if (lineBufferSize >= this.lineBufferNum) {
-                this.push(this.lineBuffer.string);
-                this.lineBuffer.string = '';
-                this.lineBuffer.length = 0;
+                this.push(this.lineBuffer);
+                this.lineBuffer = '';
             }
         }
         callback();
@@ -101,9 +102,8 @@ class JSON2CSV extends stream_1.Transform {
     _final(callback) {
         const lineBufferLength = this.lineBuffer.length;
         if (lineBufferLength > 0) {
-            this.push(this.lineBuffer.string);
-            this.lineBuffer.string = '';
-            this.lineBuffer.length = 0;
+            this.push(this.lineBuffer);
+            this.lineBuffer = '';
         }
         callback();
     }

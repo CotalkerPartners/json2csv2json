@@ -4,6 +4,7 @@ import { StringifyOptions } from 'querystring';
 interface IObjParseConfig {
   errorOnNull?: boolean;
   separator: string;
+  envelopeFix: boolean;
 }
 
 export function nestingTokenize(obj: object): string[] {
@@ -72,9 +73,12 @@ export function objectParser(obj: object, pathHeader: string[], config: IObjPars
     }
     if ((path !== null && (typeof path !== 'undefined'))) {
       // this line can cause problems assign after a configuration for separator-in-value replacing
-      row += String(path).replace(separator, '') + separator;
+      const stringPath: string = String(path);
+      const regX = new RegExp(`(${separator}|\n)`, 'g');
+      const stringVal: string = (regX.test(stringPath)) ? ((config.envelopeFix) ? `"${stringPath}"` : stringPath) : stringPath;
+      row += stringVal + separator;
     } else {
-      row += `${separator}`;
+      row += separator;
     }
     path = obj;
   }
