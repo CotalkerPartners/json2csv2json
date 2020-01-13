@@ -7,7 +7,13 @@
     "type": "git",
     "url": "git+https://github.com/Moblox/json2csv2json.git"
   },
-  "keywords": ["csv", "streaming", "nesting", "object-parser", "csv-parser"],
+  "keywords": [
+    "csv",
+    "streaming",
+    "nesting",
+    "object-parser",
+    "csv-parser"
+  ],
   "author": "Eduardo Soto",
   "license": "ISC",
   "bugs": {

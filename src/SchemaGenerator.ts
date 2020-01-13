@@ -27,7 +27,7 @@ export function generateSchema(headerList: string[]): object {
       let key: (string | number) = null;
       if (node.ptype === `Array`) key = node.index;
       else if (node.ptype === `Object`) key = node.key;
-      if (key) {
+      if (key !== null) {
         if (node.isLeaf) pathTo[key] = `String`;
         else if (node.type === `Array`)  pathTo[key] = [];
         else if (node.type === `Object`) pathTo[key] = {};
