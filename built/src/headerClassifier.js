@@ -77,7 +77,7 @@ function rowClassify(rowName, schema) {
     const modesSize = nestMap.modes.length;
     for (let i = 0; i < modesSize; i += 1) {
         const nNode = new Node(i - 1);
-        if (nestMap.modes[i] === `Root`) { // <-> if (i === 0)
+        if (nestMap.modes[i] === `Root`) {
             if (nestMap.modes[i + 1] === `Array` && modesSize > 1) {
                 schema[nestMap.tokens[i]] = []; // create key branch in schema
             }
@@ -91,7 +91,7 @@ function rowClassify(rowName, schema) {
         else {
             nNode.parent = parentList.slice(0, i - 1);
             nNode.ptype = nestMap.modes[i - 1];
-            if (nNode.ptype === `Root`) { // i = 1
+            if (nNode.ptype === `Root`) {
                 nNode.ptype = `Object`;
             }
             if (nNode.ptype === `Array`) {

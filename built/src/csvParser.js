@@ -11,7 +11,7 @@ function csvDataToJSON(schema, rowData) {
         const nestingMap = tokenClassify_1.tokenizeClassifier(rowPath);
         let path = rowObj[nestingMap.tokens[0]];
         const nestingSize = nestingMap.modes.length;
-        for (let i = 1; i < nestingSize - 1; i += 1) { // Last element of nesting corresponds to the data path
+        for (let i = 1; i < nestingSize - 1; i += 1) {
             if (nestingMap.modes[i] === 'Object' && nestingSize > 1) {
                 path = path[nestingMap.tokens[i]];
             }

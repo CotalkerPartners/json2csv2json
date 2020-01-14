@@ -29,7 +29,7 @@ function generateSchema(headerList) {
                 key = node.index;
             else if (node.ptype === `Object`)
                 key = node.key;
-            if (key) {
+            if (key !== null) {
                 if (node.isLeaf)
                     pathTo[key] = `String`;
                 else if (node.type === `Array`)
