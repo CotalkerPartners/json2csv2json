@@ -189,7 +189,7 @@ export class CSV2JSON extends Transform {
         const values = row.split(this.separator).map(h => h.trim());
         const totalColumns = values.length;
         if (totalColumns > this.headerList.length) {
-          callback(`Row ${this.parsedRows} with greater number of values than header\n${row}\n`);
+          return callback(`Row ${this.parsedRows} with greater number of values than header\n${row}\n`);
         }
         for (let i = 0; i < totalColumns; i += 1) {
           if (this.readColumns[this.headerList[i]]) {
