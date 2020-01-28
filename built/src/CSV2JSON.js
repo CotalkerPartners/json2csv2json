@@ -160,8 +160,8 @@ class CSV2JSON extends stream_1.Transform {
             dataLines.forEach((row) => {
                 const values = row.split(this.separator).map(h => h.trim());
                 const totalColumns = values.length;
-                if (totalColumns !== this.headerList.length) {
-                    throw `Row ${this.parsedRows} with different number of values than header\n${row}\n`;
+                if (totalColumns > this.headerList.length) {
+                    return callback(`Row ${this.parsedRows} with greater number of values than header\n${row}\n`);
                 }
                 for (let i = 0; i < totalColumns; i += 1) {
                     if (this.readColumns[this.headerList[i]]) {
