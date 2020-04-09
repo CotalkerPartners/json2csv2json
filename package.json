@@ -1,6 +1,6 @@
 {
   "name": "json2csv2json",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convert to and from json / csv",
   "main": "index.js",
   "repository": {
