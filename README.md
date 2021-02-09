@@ -190,7 +190,7 @@ Reprocess the JSON output structure like this:
  If you just wish to parse and config and provided that your .csv file **has** a first row of headers, you can initialize in blank, just call the constructor and then modify c2j's properties:
  
 ```javascript
-  const c2j = CSV2JSON();
+  const c2j = new CSV2JSON();
   c2j.rows.push({
       columnNum: 0,
       read: true,
@@ -202,7 +202,7 @@ Reprocess the JSON output structure like this:
 Or you can input your configurations if you have them in a JSON file with parse or manually:
  
 ```javascript
-  const c2j = CSV2JSON(config = {rows:[
+  const c2j = new CSV2JSON(undefined, { rows:[
     {
       columnNum: 0,
       read: true,
