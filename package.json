@@ -22,7 +22,7 @@
   "homepage": "https://github.com/Moblox/json2csv2json#readme",
   "dependencies": {
     "lodash": "^4.17.11",
-    "moment": "^2.24.0"
+    "moment": "^2.29.2"
   },
   "devDependencies": {
     "@angular/compiler": "^7.2.1",
