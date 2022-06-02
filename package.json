@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@angular/compiler": "^7.2.1",
-    "@angular/core": "^7.2.1",
+    "@angular/core": "^11.0.5",
     "@types/chai": "^4.1.7",
     "@types/lodash": "^4.14.120",
     "@types/mocha": "^5.2.5",
